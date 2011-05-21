@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/images">
+        <file alias="maelstrom-splash.png">images/maelstrom-splash.png</file>
+    </qresource>
+</RCC>
