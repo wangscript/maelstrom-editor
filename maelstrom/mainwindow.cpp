@@ -55,7 +55,9 @@ void MainWindow::initialize()
     RenderCreationParams rndParams;
     WId id;
     wndParams.windowHandle = this->viewport[0]->winId();
+#if defined(VTX_PLATFORM_LINUX)
     wndParams.displayX11 = QX11Info::display();
+#endif
     wndParams.windowTitle = L"Vortex window";
     wndParams.windowSize.x = 800;
     wndParams.windowSize.y = 600;
