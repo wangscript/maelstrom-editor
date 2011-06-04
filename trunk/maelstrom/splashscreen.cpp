@@ -1,6 +1,6 @@
 #include "splashscreen.h"
 #include "ui_splashscreen.h"
-#include <QPixMap>
+#include <QPixmap>
 #include <QStringBuilder>
 #include <platform/vtx_defineconfig.h>
 
