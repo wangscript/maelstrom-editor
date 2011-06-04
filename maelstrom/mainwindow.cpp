@@ -1,9 +1,10 @@
-#define VTX_TOOL_BUILD
-#include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "mainwindow.h"
 
 #include <QTextEdit>
 #include <QThread>
+#include <QX11Info>
+
 
 #define ASSERTIONS_ENABLED 1
 
@@ -52,13 +53,24 @@ void MainWindow::initialize()
 
     WindowCreationParams wndParams;
     RenderCreationParams rndParams;
+    WId id;
     wndParams.windowHandle = this->viewport[0]->winId();
-    rndParams.backBufferSize.x = this->width();
-    rndParams.backBufferSize.y = this->height();
+    wndParams.displayX11 = QX11Info::display();
+    wndParams.windowTitle = L"Vortex window";
+    wndParams.windowSize.x = 800;
+    wndParams.windowSize.y = 600;
+    rndParams.backBufferSize.x = 1;//this->width();
+    rndParams.backBufferSize.y = 1;//this->height();
+
     rndParams.multisampleCount = 1;
     rndParams.multisampleQuality = 0;
+#if defined(VTX_PLATFORM_WIN32)
     rndParams.rapi = E_RAPI_DX10;
+#elif defined(VTX_PLATFORM_LINUX)
+    rndParams.rapi = E_RAPI_OPENGL;
+#endif
 
+    //this->root->Run(wndParams, rndParams);
     this->root->toolInit(wndParams, rndParams);
 }
 
@@ -66,6 +78,6 @@ void MainWindow::viewportRedraw()
 {
     if(this->root != NULL)
     {
-        this->root->toolStep(1.0f);
+       this->root->toolStep(1.0f);
     }
 }
