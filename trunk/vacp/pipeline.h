@@ -9,13 +9,13 @@
 class Pipeline
 {
 private:
-        std::list<BuildContext*> ctxs;
-
+    std::list<BuildContext*> ctxs;
+    void scan_plugins(void);
 public:
-        Pipeline(QString&);
-        void build_actor(QString&);
-        void destroy(void);
-        void context_finished(BuildContext *ctx);
+    Pipeline(QString&);
+    void build_actor(QString&);
+    void destroy(void);
+    void context_finished(BuildContext *ctx);
 };
 
 #endif // PIPELINE_H

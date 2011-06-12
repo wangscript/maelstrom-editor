@@ -20,10 +20,16 @@ TEMPLATE = app
 SOURCES += main.cpp \
     pipeline.cpp \
     build.cpp \
-    asset.cpp
+    asset.cpp \
+    contentexporter.cpp \
+    texturedata.cpp \
+    textureexporter.cpp
 
 HEADERS += \
     pipeline.h \
     build.h \
     error.h \
-    asset.h
+    asset.h \
+    contentexporter.h \
+    texturedata.h \
+    textureexporter.h
