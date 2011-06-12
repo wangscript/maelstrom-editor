@@ -5,12 +5,14 @@
 #include <QVariant>
 #include <QFile>
 
-Asset::Asset(int asset_id, QString &asset_name, QString &asset_source, QDateTime &asset_last_built, QString &asset_output)
+Asset::Asset(int asset_id, QString &asset_name, QString &asset_source, QDateTime &asset_last_built, QString &asset_output, QString &asset_exporter, QString &asset_compiler)
     :	id(asset_id),
       name(asset_name),
       source(asset_source),
       last_built(asset_last_built),
-      output(asset_output)
+      output(asset_output),
+      exporter(asset_exporter),
+      compiler(asset_compiler)
 {
     this->validate();
 }
@@ -21,6 +23,8 @@ Asset::~Asset()
     delete &this->last_built;
     delete &this->output;
     delete &this->source;
+    delete &this->exporter;
+    delete &this->compiler;
 }
 
 void Asset::validate(void)
@@ -66,13 +70,17 @@ Asset* Asset::get_by_name(QString &name)
     QString &source = query.value(2).toString();
     QDateTime &last_built = query.value(3).toDateTime();
     QString &output = query.value(4).toString();
+    QString &exporter = query.value(5).toString();
+    QString &compiler = query.value(6).toString();
 
     return new Asset(
                 id,
                 asset_name,
                 source,
                 last_built,
-                output);;
+                output,
+                exporter,
+                compiler);
 }
 
 std::vector<Asset*> *Asset::get_dependencies(void)
@@ -96,8 +104,10 @@ std::vector<Asset*> *Asset::get_dependencies(void)
         QString &source = query.value(2).toString();
         QDateTime &last_built = query.value(3).toDateTime();
         QString &output = query.value(4).toString();
+        QString &exporter = query.value(5).toString();
+        QString &compiler = query.value(6).toString();
 
-        deps->push_back(new Asset(id, asset_name, source, last_built, output));
+        deps->push_back(new Asset(id, asset_name, source, last_built, output, exporter, compiler));
     }
 
     return deps;
@@ -111,6 +121,16 @@ QString &Asset::get_output()
 QString &Asset::get_source()
 {
     return this->source;
+}
+
+QString &Asset::get_exporter()
+{
+    return this->exporter;
+}
+
+QString &Asset::get_compiler()
+{
+    return this->compiler;
 }
 
 QDateTime &Asset::get_last_built()
