@@ -1,18 +1,16 @@
 #include <asset.h>
 #include <error.h>
-#include <strstream>
-#include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QVariant>
 #include <QFile>
 
 Asset::Asset(int asset_id, QString &asset_name, QString &asset_source, QDateTime &asset_last_built, QString &asset_output)
-        :	id(asset_id),
-                name(asset_name),
-                source(asset_source),
-                last_built(asset_last_built),
-                output(asset_output)
+    :	id(asset_id),
+      name(asset_name),
+      source(asset_source),
+      last_built(asset_last_built),
+      output(asset_output)
 {
     this->validate();
 }

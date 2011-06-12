@@ -5,7 +5,7 @@
 
 void context_callback(Pipeline &pl, BuildContext *ctx)
 {
-        pl.context_finished(ctx);
+    pl.context_finished(ctx);
 }
 
 Pipeline::Pipeline(QString &db_path)
@@ -22,10 +22,10 @@ Pipeline::Pipeline(QString &db_path)
 
 void Pipeline::build_actor(QString& asset)
 {
-        BuildContext *ctx = new BuildContext(asset, context_callback);
-        this->ctxs.push_back(ctx);
+    BuildContext *ctx = new BuildContext(asset, context_callback);
+    this->ctxs.push_back(ctx);
 
-        ctx->exec();
+    ctx->exec();
 }
 
 void Pipeline::destroy(void)
@@ -36,6 +36,6 @@ void Pipeline::destroy(void)
 
 void Pipeline::context_finished(BuildContext *ctx)
 {
-        this->ctxs.remove(ctx);
-        delete ctx;
+    this->ctxs.remove(ctx);
+    delete ctx;
 }
