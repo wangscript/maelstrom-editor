@@ -6,9 +6,12 @@
 #include <list>
 #include <build.h>
 
+class PluginManager;
+
 class Pipeline
 {
 private:
+    PluginManager *plugin_manager;
     std::list<BuildContext*> ctxs;
     void scan_plugins(void);
 public:

@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     asset.cpp \
     contentexporter.cpp \
     texturedata.cpp \
-    textureexporter.cpp
+    textureexporter.cpp \
+    pluginmanager.cpp
 
 HEADERS += \
     pipeline.h \
@@ -32,4 +33,5 @@ HEADERS += \
     asset.h \
     contentexporter.h \
     texturedata.h \
-    textureexporter.h
+    textureexporter.h \
+    pluginmanager.h

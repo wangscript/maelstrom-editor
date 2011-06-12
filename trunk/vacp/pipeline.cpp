@@ -1,9 +1,8 @@
 #include <pipeline.h>
 #include <error.h>
+#include <pluginmanager.h>
 #include <QSqlDatabase>
 #include <QsqlError>
-#include <QDir>
-#include <QLibrary>
 
 void context_callback(Pipeline &pl, BuildContext *ctx)
 {
@@ -21,6 +20,7 @@ Pipeline::Pipeline(QString &db_path)
         throw new DBException(message);
     }
 
+    this->plugin_manager->register_plugins();
     this->scan_plugins();
 }
 
@@ -34,21 +34,7 @@ void Pipeline::build_actor(QString& asset)
 
 void Pipeline::scan_plugins(void)
 {
-    QDir dir("/plugins");
-    if(!dir.exists())
-    {
-        QDir::current().mkdir("plugins");
-    }
 
-    QStringList dir_entries = dir.entryList();
-    for(int i = 0; i < dir_entries.size(); i++)
-    {
-        if(QLibrary::isLibrary(dir_entries.at(i)))
-        {
-            QLibrary lib(dir_entries.at(i));
-            lib.resolve("");
-        }
-    }
 }
 
 void Pipeline::destroy(void)
