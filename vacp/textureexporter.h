@@ -3,7 +3,7 @@
 #include <contentexporter.h>
 #include <texturedata.h>
 
-class TextureExporter : ContentExporter<TextureData>
+/*class TextureExporter : ContentExporter<TextureData>
 {
 public:
     TextureExporter();
@@ -13,6 +13,6 @@ public:
         TextureData *data = new TextureData(0, 0, 0);
         return data;
     }
-};
+};*/
 
 #endif // TEXTUREEXPORTER_H

@@ -1,5 +1,6 @@
 #include "textureexporter.h"
 
-TextureExporter::TextureExporter()
+/*TextureExporter::TextureExporter()
 {
 }
+*/
