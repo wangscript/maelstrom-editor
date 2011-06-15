@@ -61,5 +61,5 @@ void BuildContext::build_asset(Asset* asset)
     {
 
     }
-    delete &asset;
+    delete asset;
 }

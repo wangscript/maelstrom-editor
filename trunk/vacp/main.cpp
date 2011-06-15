@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         else
         {
 
-            std::cerr << "Invalid command '" << cmd.data() << std::endl;
+            std::cerr << "Invalid command '" << cmd.toLocal8Bit().data() << std::endl;
         }
 
         pipeline->destroy();

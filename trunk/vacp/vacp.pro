@@ -34,4 +34,5 @@ HEADERS += \
     contentexporter.h \
     texturedata.h \
     textureexporter.h \
-    pluginmanager.h
+    pluginmanager.h \
+    plugin_header/vacp_plugin_common.h

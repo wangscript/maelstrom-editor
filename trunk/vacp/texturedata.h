@@ -2,6 +2,12 @@
 #define TEXTUREDATA_H
 #include <QVariant>
 
+class ITexture
+{
+public:
+    virtual qint32 *get_data(void) = 0;
+};
+
 class TextureData
 {
 private:

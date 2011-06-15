@@ -66,21 +66,21 @@ Asset* Asset::get_by_name(QString &name)
     }
 
     int id = query.value(0).toInt();
-    QString &asset_name = query.value(1).toString();
-    QString &source = query.value(2).toString();
-    QDateTime &last_built = query.value(3).toDateTime();
-    QString &output = query.value(4).toString();
-    QString &exporter = query.value(5).toString();
-    QString &compiler = query.value(6).toString();
+    QString *asset_name = new QString(query.value(1).toString());
+    QString *source = new QString(query.value(2).toString());
+    QDateTime *last_built = new QDateTime(query.value(3).toDateTime());
+    QString *output = new QString(query.value(4).toString());
+    QString *exporter = new QString(query.value(5).toString());
+    QString *compiler = new QString(query.value(6).toString());
 
     return new Asset(
                 id,
-                asset_name,
-                source,
-                last_built,
-                output,
-                exporter,
-                compiler);
+                *asset_name,
+                *source,
+                *last_built,
+                *output,
+                *exporter,
+                *compiler);
 }
 
 std::vector<Asset*> *Asset::get_dependencies(void)
@@ -100,14 +100,14 @@ std::vector<Asset*> *Asset::get_dependencies(void)
     while(query.next())
     {
         int id = query.value(0).toInt();
-        QString &asset_name = query.value(1).toString();
-        QString &source = query.value(2).toString();
-        QDateTime &last_built = query.value(3).toDateTime();
-        QString &output = query.value(4).toString();
-        QString &exporter = query.value(5).toString();
-        QString &compiler = query.value(6).toString();
+        QString *asset_name = new QString(query.value(1).toString());
+        QString *source = new QString(query.value(2).toString());
+        QDateTime *last_built = new QDateTime(query.value(3).toDateTime());
+        QString *output = new QString(query.value(4).toString());
+        QString *exporter = new QString(query.value(5).toString());
+        QString *compiler = new QString(query.value(6).toString());
 
-        deps->push_back(new Asset(id, asset_name, source, last_built, output, exporter, compiler));
+        deps->push_back(new Asset(id, *asset_name, *source, *last_built, *output, *exporter, *compiler));
     }
 
     return deps;

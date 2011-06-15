@@ -20,6 +20,7 @@ Pipeline::Pipeline(QString &db_path)
         throw new DBException(message);
     }
 
+    this->plugin_manager = new PluginManager;
     this->plugin_manager->register_plugins();
     this->scan_plugins();
 }
