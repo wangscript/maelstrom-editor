@@ -2,15 +2,19 @@
 #include <asset.h>
 #include <error.h>
 #include <QFileInfo>
+#include "pipeline.h"
+#include <iostream>
+#include <QTextCodec>
 
-BuildContext::BuildContext(QString &asset_name, build_callback callback)
-    :       asset(asset_name),
+BuildContext::BuildContext(Pipeline &pipeline, QString &asset_name, build_callback callback)
+    :       pipeline(pipeline),
+      asset(asset_name),
       cbk(callback)
 {
 
 }
 
-void BuildContext::init_dep_tree(unsigned int depth, Asset *root_asset)
+void BuildContext::init_dep_tree(int depth, Asset *root_asset)
 {
     if(this->tree_depth < depth)
         this->tree_depth = depth;
@@ -35,21 +39,25 @@ void BuildContext::exec(void)
 
 void BuildContext::build_tree(void)
 {
-    for(unsigned int i = this->tree_depth; i >= 0; i--)
+    for(int i = this->tree_depth; i >= 0; i--)
     {
         QList<Asset*> values = this->dep_map.values(i);
-        for(int j = 0; j < values.size(); j++)
+        for(int j = 0; j < values.size(); ++j)
         {
-            this->build_asset(values.at(j));
+            Asset *ass2 = values.at(i);
+            this->build_asset(ass2);
         }
     }
 }
 
-void BuildContext::build_asset(Asset* asset)
+void BuildContext::build_asset(Asset *asset)
 {
     // Build asset if no output file exists
-    bool should_build = asset->get_output().isEmpty() ||
-            !QFile::exists(asset->get_output());
+    bool should_build = asset->get_force_build();
+
+    if(!should_build)
+        should_build = asset->get_output().isEmpty() ||
+                !QFile::exists(asset->get_output());
 
     if(!should_build)
     {
@@ -59,7 +67,35 @@ void BuildContext::build_asset(Asset* asset)
 
     if(should_build)
     {
+        ContentExporter *exporter = this->pipeline.get_texture_exporter(asset->get_exporter());
+        QTextCodec *codec = QTextCodec::codecForLocale();
+        QByteArray asset_source =  codec->fromUnicode(asset->get_source());
+        char *source = asset_source.data();
 
+        Content *texture_data = exporter->process(source);
+
+        char *pixels = texture_data->get_pchar_value("PIXELDATA");
+        char c;
+        for(int i = 0; i < 117; i++)
+        {
+            c = pixels[i];
+        }
+
+        ContentCompiler *compiler = this->pipeline.get_texture_compiler(asset->get_compiler());
+        QByteArray asset_output = codec->fromUnicode(asset->get_output());
+        QByteArray asset_config = codec->fromUnicode(asset->get_compileconfig());
+        char *output = asset_output.data();
+        char * config = asset_config.data();
+        compiler->process(
+                    texture_data,
+                    output,
+                    config);
+
+        exporter->destroy(texture_data);
+    }
+    else
+    {
+        std::cout << "Asset up date. Nothing to do for: " << asset->get_name().toLocal8Bit().data() << std::endl;
     }
     delete asset;
 }

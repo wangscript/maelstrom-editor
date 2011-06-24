@@ -39,6 +39,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Projects\maelstrom-engine\maelstrom-editor\vacp\plugin_header;C:\Projects\maelstrom-engine\maelstrom-editor\content_exporters\texture\default_texture_exporters\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -77,6 +78,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bmp_exporter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\texturebmpexporter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

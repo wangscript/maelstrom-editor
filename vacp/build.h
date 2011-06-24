@@ -13,15 +13,16 @@ class BuildContext
 {
 public:
         typedef void (*build_callback)(Pipeline &pl, BuildContext*);
-        BuildContext(QString &asset_name, build_callback callback);
+        BuildContext(Pipeline &pipeline, QString &asset_name, build_callback callback);
         void exec(void);
 private:
+        Pipeline &pipeline;
         build_callback cbk;
         QString asset;
-        unsigned int tree_depth;
+        int tree_depth;
         QMultiMap<unsigned int, Asset*> dep_map;
 
-        void init_dep_tree(unsigned int, Asset*);
+        void init_dep_tree(int, Asset*);
         void build_tree(void);
         void build_asset(Asset*);
 };

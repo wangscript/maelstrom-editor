@@ -1,4 +1,3 @@
-#define NO_PLUGIN_HEADER
 #define EXPORTER_NAME_LIMIT     255
 
 #include "pluginmanager.h"
@@ -7,11 +6,14 @@
 #include <iostream>
 #include <QDebug>
 #include <Windows.h>
-#include <plugin_header/vacp_plugin_common.h>
+#include "error.h"
 
 typedef void (*plugin_get_exporter_name)(char*, unsigned int);
 typedef void (*plugin_register_delegate)(PluginManager&);
-typedef ContentExporter<ITextureData> *(*plugin_get_texture_exporter)(void);
+typedef ContentExporter *(*plugin_get_texture_exporter)(void);
+
+typedef ContentExporterFactory *(plugin_create_content_exporter_factory)(void);
+typedef ContentCompilerFactory *(plugin_create_content_compiler_factory)(void);
 
 PluginManager::PluginManager()
 {
@@ -41,33 +43,54 @@ void PluginManager::register_plugins(void)
             }
             else
             {
-                plugin_get_exporter_name get_exporter_name =
-                        static_cast<plugin_get_exporter_name>(lib->resolve("get_exporter_name"));
+                plugin_create_content_exporter_factory *create_content_exporter_factory =
+                        static_cast<plugin_create_content_exporter_factory*>(lib->resolve("create_exporter_factory"));
 
-                if(!get_exporter_name)
+                plugin_create_content_compiler_factory *create_content_compiler_factory =
+                        static_cast<plugin_create_content_compiler_factory*>(lib->resolve("create_compiler_factory"));
+
+                if(!create_content_exporter_factory && !create_content_compiler_factory)
                 {
-                    std::cerr << "Library is not valid plugin. Can not find symbol get_exporter_name: " << dir_entries.at(i).fileName().toLocal8Bit().constData();
-                    lib->unload();
-                    delete lib;
+                    std::cerr << dir_entries.at(i).fileName().toLocal8Bit().data() <<  ": Invalid plugin. Does not export create_compiler_factory nor create_exporter_factory" << std::endl;
                 }
-                else
-                {
-                    char *exporter_name = new char[EXPORTER_NAME_LIMIT];
-                    get_exporter_name(exporter_name, EXPORTER_NAME_LIMIT);
 
-                    QMap<char*, QLibrary*>::iterator it = this->exporters.find(exporter_name);
-                    if(it != this->exporters.end())
+                if(create_content_compiler_factory)
+                {
+                    ContentCompilerFactory *factory = create_content_compiler_factory();
+                    char *compiler_name = factory->get_name();
+
+                    QMap<QString, ContentCompilerFactory*>::iterator it = this->compilers.find(compiler_name);
+                    if(it != this->compilers.end())
                     {
-                        std::cerr << "Exporter '" << exporter_name << "' in "
-                                  << lib->fileName().toLocal8Bit().constData() << " has already been registered by "
-                                  << it.value()->fileName().toLocal8Bit().constData() << std::endl;
+                        std::cerr << "Compiler '" << compiler_name << "' in"
+                                  << lib->fileName().toLocal8Bit().constData() << " has already been registered." << std::endl;
+                        delete factory;
                         lib->unload();
                         delete lib;
                     }
                     else
                     {
-                        this->exporters.insert(exporter_name, lib);
+                        this->compilers.insert(compiler_name, factory);
+                    }
+                }
+
+                if(create_content_exporter_factory)
+                {
+                    ContentExporterFactory *factory = create_content_exporter_factory();
+                    char *exporter_name = factory->get_name();
+
+                    QMap<QString, ContentExporterFactory*>::iterator it = this->exporters.find(exporter_name);
+                    if(it != this->exporters.end())
+                    {
+                        std::cerr << "Exporter '" << exporter_name << "' in "
+                                  << lib->fileName().toLocal8Bit().constData() << " has already been registered." << std::endl;
+                        delete factory;
                         lib->unload();
+                        delete lib;
+                    }
+                    else
+                    {
+                        this->exporters.insert(exporter_name, factory);
                     }
                 }
             }
@@ -75,6 +98,7 @@ void PluginManager::register_plugins(void)
     }
 }
 
+/*
 void PluginManager::register_exporter(char *exporter_name, void *token)
 {
     QMap<char*, QLibrary*>::iterator it;
@@ -92,7 +116,7 @@ void PluginManager::register_exporter(char *exporter_name, void *token)
 void PluginManager::register_compiler(char *compiler_name, void *token)
 {
     QMap<char*, QLibrary*>::iterator it;
-    if(this->compilers.find(compiler_name) == this->exporters.end())
+    if(this->compilers.find(compiler_name) == this->compilers.end())
     {
         std::cerr << "Multiple registrations of exporter '" << compiler_name << "'. Ignoring subsequent registrations for this exporter";
     }
@@ -101,4 +125,44 @@ void PluginManager::register_compiler(char *compiler_name, void *token)
         QLibrary *lib = static_cast<QLibrary*>(token);
         this->compilers.insert(compiler_name, lib);
     }
+}
+*/
+
+ContentExporter *PluginManager::create_texture_exporter(QString &exporter_name)
+{
+    ContentExporter *exporter = NULL;
+    QMap<QString, ContentExporterFactory*>::iterator it = this->exporters.find(exporter_name);
+    if(it == this->exporters.end())
+    {
+        QString msg("An asset refers to an exporter that does not exist: ");
+        msg.append(exporter_name);
+        throw new InvalidAssetException(msg);
+    }
+    else
+    {
+        ContentExporterFactory *factory = it.value();
+        exporter = factory->create();
+    }
+
+    return exporter;
+}
+
+ContentCompiler *PluginManager::create_texture_compiler(QString &compiler_name)
+{
+    ContentCompiler *compiler = NULL;
+    QMap<QString, ContentCompilerFactory* >::iterator it = this->compilers.find(compiler_name);
+    if(it == this->compilers.end())
+    {
+        QString msg("An asset refers to a compiler that does not exist: ");
+        msg.append(compiler_name);
+        // TODO: Should not throw this kind of exception.
+        throw new InvalidAssetException(msg);
+    }
+    else
+    {
+        ContentCompilerFactory *factory = it.value();
+        compiler = factory->create();
+    }
+
+    return compiler;
 }

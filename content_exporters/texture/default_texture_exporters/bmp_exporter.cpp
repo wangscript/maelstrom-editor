@@ -2,58 +2,188 @@
 
 #include <Windows.h>
 #include <iostream>
-#include "C:\Projects\maelstrom-engine\maelstrom-editor\vacp\plugin_header\vacp_Plugin_common.h"
+#include <fstream>
+#include <list>
+#include <texturebmpexporter.h>
+#include <stdlib.h>
+
+
+#define BUFFER_SIZE			512
+
+#define BITMAPSIGNATURE			19778
+
+#define BITMAPCOREHEADER_SIZE	12
+#define BITMAPCOREHEADER2_SIZE	64
+#define BITMAPINFOHEADER_SIZE	40
+#define BITMAPV2INFOHEADER_SIZE	52
+#define BITMAPV3INFOHEADER_SIZE	56
+#define BITMAPV4HEADER_SIZE		108
+#define BITMAPV5HEADER_SIZE		124
+
 extern "C"
 {
-	class TextureData : ITextureData
+	TextureData::TextureData(char *data, unsigned int length, unsigned int stride)
+		: data(data), length(length), stride(stride)
 	{
-	private:
-		unsigned char *data;
-		unsigned int length;
-		unsigned int stride;
-	public:
-		TextureData(unsigned char *data, unsigned int length, unsigned int stride)
-			: data(data), length(length), stride(stride)
-		{
-		}
+	}
 
-		virtual unsigned char *get_data(void)
-		{
-			return this->data;
-		}
-
-		virtual unsigned int get_data_length(void)
-		{
-			return this->length;
-		}
-
-		virtual unsigned int get_stride(void)
-		{
-			return this->stride;
-		}
-	};
-
-	class BmpExporter : public ContentExporter<TextureData>
+	char *TextureData::get_data(void)
 	{
-		virtual TextureData *process(char *path)
+		return this->data;
+	}
+
+	void TextureData::set_data(char *data)
+	{
+		this->data = data;
+	}
+
+	unsigned int TextureData::get_data_length(void)
+	{
+		return this->length;
+	}
+
+	void TextureData::set_data_length(unsigned int length)
+	{
+		this->length = length;
+	}
+
+	unsigned int TextureData::get_stride(void)
+	{
+		return this->stride;
+	}
+
+	void TextureData::set_stride(unsigned int stride)
+	{
+		this->stride = stride;
+	}
+
+	int TextureData::get_width(void)
+	{
+		return this->width;
+	}
+
+	void TextureData::set_width(int width)
+	{
+		this->width = width;
+	}
+
+	int TextureData::get_height(void)
+	{
+		return this->height;
+	}
+
+	void TextureData::set_height(int height)
+	{
+		this->height = height;
+	}
+
+	Content *BmpExporter::process(char *path)
+	{
+		std::ifstream input(path, std::ifstream::binary);
+		if(!input.good())
+			return NULL;
+
+		Content *texture = new Content;
+
+		BITMAPFILEHEADER header;
+
+		input.read(reinterpret_cast<char*>(&header), sizeof(BITMAPFILEHEADER));
+		if(header.bfType != BITMAPSIGNATURE)
 		{
-			unsigned char *data = (unsigned char*)malloc(255);
-			for(int i = 0; i < 255; i++)
+			input.close();
+			return NULL;
+		}
+
+		__int32 dib_header_size;
+		input.read(reinterpret_cast<char*>(&dib_header_size), sizeof(__int32));
+
+		if(dib_header_size == BITMAPINFOHEADER_SIZE)
+		{
+			input.seekg(-4, std::ios_base::cur);
+			BITMAPINFOHEADER dib_header;
+			if(this->parse_dib_bitmapinfoheader(input, dib_header) != 0)
 			{
-				data[i] = static_cast<unsigned char>(i);
+				input.close();
+				return NULL;
 			}
 
-			return new TextureData(data, 255, 50);
+			texture->set_int_value("WIDTH", new int(dib_header.biWidth));
+			texture->set_int_value("HEIGHT", new int(dib_header.biHeight));
+			
+			if(dib_header.biBitCount <= 8)
+			{
+				int* palette = new int[dib_header.biClrUsed];
+				input.read(reinterpret_cast<char*>(palette), sizeof(palette));
+			}
+			int row_size = ceil((dib_header.biBitCount * dib_header.biWidth) / 32.0f) * 4;
+		
+			char *pixel_data = new char[dib_header.biSizeImage];
+			input.seekg(header.bfOffBits, std::ios_base::beg);
+			input.read(pixel_data, dib_header.biSizeImage);
+
+			// When height is non-negavite, its scan lines are flipped vertically so we must flip them.
+			if(dib_header.biHeight > 0)
+			{
+				char *pixel_data_temp = new char[dib_header.biSizeImage];
+				int rows = dib_header.biSizeImage / row_size;
+
+				// Copy all scanline rows into temp buffer in reverse order
+				for(int y = 0; y < rows; y++)
+					memcpy(	static_cast<void*>(&pixel_data_temp[y * row_size]),
+							static_cast<void*>(&pixel_data[(rows - y - 1) * row_size]),
+							row_size);
+
+				// Copy entire temp buffer content into main buffer.
+				memcpy(	static_cast<void*>(pixel_data),
+						static_cast<void*>(pixel_data_temp),
+						dib_header.biSizeImage);
+
+				delete[] pixel_data_temp;
+			}
+
+			texture->set_pchar_value("PIXELDATA", pixel_data);
+			texture->set_int_value("PIXELDATA_LEN", new int(dib_header.biSizeImage));
 		}
 
-		virtual void destroy(TextureData *data)
+		return texture;
+	}
+
+	int BmpExporter::parse_dib_bitmapinfoheader(std::ifstream &input, BITMAPINFOHEADER &header)
+	{
+		input.read(reinterpret_cast<char*>(&header), sizeof(header));
+		if(header.biCompression != BI_RGB)
+			return -1;
+
+		return 0;
+	}
+
+
+	void BmpExporter::destroy(Content *data)
+	{
+		
+	}
+
+	class BmpExporterFactory : public ContentExporterFactory
+	{
+	public:
+		BmpExporterFactory() : ContentExporterFactory("Bmp Texture Exporter", "")
 		{
+		}
+
+		BmpExporter *create(void)
+		{
+			return new BmpExporter;
+		}
+
+		void destroy(ContentExporter *exporter)
+		{
+			delete exporter;
 		}
 	};
 
-	__declspec(dllexport) BmpExporter *create(void)
+	__declspec(dllexport) ContentExporterFactory *create_exporter_factory(void)
 	{
-		return new BmpExporter;
+		return new BmpExporterFactory;
 	}
 }
 
