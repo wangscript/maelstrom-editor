@@ -2,24 +2,26 @@
 #define PLUGINMANAGER_H
 #include <QMap>
 
-class QLibrary;
+#define NO_PLUGIN_HEADER
+#include <plugin_header/vacp_plugin_common.h>
 
-template <class T>
+class QLibrary;
 class ContentExporter;
+class ContentExporterFactory;
 
 class PluginManager
 {
 private:
-    QMap<char*, QLibrary*> exporters;
-    QMap<char*, QLibrary*> compilers;
+    QMap<QString, ContentExporterFactory*> exporters;
+    QMap<QString, ContentCompilerFactory*> compilers;
 public:
     void register_plugins(void);
 
-    template <class T>
-    void register_content_exporter(ContentExporter<T> &exporter);
-
     void register_exporter(char *exporter_name, void *token);
     void register_compiler(char *compiler_name, void *token);
+
+    ContentExporter *create_texture_exporter(QString &exporter_name);
+    ContentCompiler *create_texture_compiler(QString &compiler_name);
     PluginManager();
 };
 
