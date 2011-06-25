@@ -5,7 +5,6 @@
 #include <QLibrary>
 #include <iostream>
 #include <QDebug>
-#include <Windows.h>
 #include "error.h"
 
 typedef void (*plugin_get_exporter_name)(char*, unsigned int);
@@ -44,10 +43,10 @@ void PluginManager::register_plugins(void)
             else
             {
                 plugin_create_content_exporter_factory *create_content_exporter_factory =
-                        static_cast<plugin_create_content_exporter_factory*>(lib->resolve("create_exporter_factory"));
+                        reinterpret_cast<plugin_create_content_exporter_factory*>(lib->resolve("create_exporter_factory"));
 
                 plugin_create_content_compiler_factory *create_content_compiler_factory =
-                        static_cast<plugin_create_content_compiler_factory*>(lib->resolve("create_compiler_factory"));
+                        reinterpret_cast<plugin_create_content_compiler_factory*>(lib->resolve("create_compiler_factory"));
 
                 if(!create_content_exporter_factory && !create_content_compiler_factory)
                 {

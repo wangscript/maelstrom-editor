@@ -2,7 +2,7 @@
 #include <error.h>
 #include <pluginmanager.h>
 #include <QSqlDatabase>
-#include <QsqlError>
+#include <QSqlError>
 
 void context_callback(Pipeline &pl, BuildContext *ctx)
 {
