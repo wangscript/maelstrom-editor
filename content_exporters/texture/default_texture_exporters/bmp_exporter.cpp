@@ -1,6 +1,5 @@
 #define EXPORTER_NAME	"Bmp Texture Exporter"
 
-#include <Windows.h>
 #include <iostream>
 #include <fstream>
 #include <list>
@@ -19,6 +18,10 @@
 #define BITMAPV3INFOHEADER_SIZE	56
 #define BITMAPV4HEADER_SIZE		108
 #define BITMAPV5HEADER_SIZE		124
+
+#if defined(WIN32)
+#include <Windows.h>
+#endif
 
 extern "C"
 {
@@ -99,7 +102,7 @@ extern "C"
 		input.seekg(-4, std::ios_base::cur);
 		if(dib_header_size == BITMAPINFOHEADER_SIZE)
 		{
-			BITMAPINFOHEADER dib_header;
+			BITMAP_INFOHEADER dib_header;
 			if(this->parse_dib_bitmapinfoheader(input, dib_header) != 0)
 			{
 				input.close();
@@ -145,7 +148,7 @@ extern "C"
 		}
 		else if(dib_header_size == BITMAPV3INFOHEADER_SIZE)
 		{
-			BITMAPV3HEADER dib_header;
+			BITMAP_V3HEADER dib_header;
 			input.read(reinterpret_cast<char*>(&dib_header), sizeof(dib_header));
 			char *pixel_data = new char[dib_header.bV4SizeImage];
 			input.seekg(header.bfOffBits, std::ios_base::beg);
@@ -158,7 +161,7 @@ extern "C"
 		return texture;
 	}
 
-	int BmpExporter::parse_dib_bitmapinfoheader(std::ifstream &input, BITMAPINFOHEADER &header)
+	int BmpExporter::parse_dib_bitmapinfoheader(std::ifstream &input, BITMAP_INFOHEADER &header)
 	{
 		input.read(reinterpret_cast<char*>(&header), sizeof(header));
 		if(header.biCompression != BI_RGB)
@@ -197,6 +200,7 @@ extern "C"
 	}
 }
 
+#if defined(WIN32)
 BOOL WINAPI DllMain(
 	__in  HINSTANCE hinstDLL,
 	__in  DWORD fdwReason,
@@ -205,6 +209,7 @@ BOOL WINAPI DllMain(
 {
 	return TRUE;
 }
+#endif
 
 
 //extern "C" __declspec(dllexport) register_plugin

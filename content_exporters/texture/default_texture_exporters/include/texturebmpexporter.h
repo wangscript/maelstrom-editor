@@ -4,24 +4,46 @@
 #include <fstream>
 #include "C:\Projects\maelstrom-engine\maelstrom-editor\vacp\plugin_header\vacp_Plugin_common.h"
 
-typedef struct tagBITMAPV3HEADER
+typedef struct tag_BITMAPFILEHEADER {
+        unsigned __int16		bfType;
+        unsigned __int32		bfSize;
+        unsigned __int16		bfReserved1;
+        unsigned __int16		bfReserved2;
+        unsigned __int32		bfOffBits;
+} BITMAP_FILEHEADER;
+
+typedef struct tag_BITMAPINFOHEADER{
+        unsigned __int32		biSize;
+        __int32					biWidth;
+        __int32					biHeight;
+        unsigned __int16		biPlanes;
+        unsigned __int16		biBitCount;
+        unsigned __int32		biCompression;
+        unsigned __int32		biSizeImage;
+        __int32					biXPelsPerMeter;
+        __int32					biYPelsPerMeter;
+        unsigned __int32		biClrUsed;
+        unsigned __int32		biClrImportant;
+} BITMAP_INFOHEADER;
+
+typedef struct tag_BITMAPV3HEADER
 {
-	    DWORD        bV4Size;
-        LONG         bV4Width;
-        LONG         bV4Height;
-        WORD         bV4Planes;
-        WORD         bV4BitCount;
-        DWORD        bV4V4Compression;
-        DWORD        bV4SizeImage;
-        LONG         bV4XPelsPerMeter;
-        LONG         bV4YPelsPerMeter;
-        DWORD        bV4ClrUsed;
-        DWORD        bV4ClrImportant;
-        DWORD        bV4RedMask;
-        DWORD        bV4GreenMask;
-        DWORD        bV4BlueMask;
-        DWORD        bV4AlphaMask;
-} BITMAPV3HEADER;
+	    unsigned __int32        bV4Size;
+        __int32					bV4Width;
+        __int32					bV4Height;
+        unsigned __int16        bV4Planes;
+        unsigned __int16        bV4BitCount;
+        unsigned __int32        bV4V4Compression;
+        unsigned __int32        bV4SizeImage;
+        __int32					bV4XPelsPerMeter;
+        __int32					bV4YPelsPerMeter;
+        unsigned __int32        bV4ClrUsed;
+        unsigned __int32        bV4ClrImportant;
+        unsigned __int32        bV4RedMask;
+        unsigned __int32        bV4GreenMask;
+        unsigned __int32        bV4BlueMask;
+        unsigned __int32        bV4AlphaMask;
+} BITMAP_V3HEADER;
 
 class TextureData : public ITextureData
 {
@@ -54,7 +76,7 @@ public:
 class BmpExporter : public ContentExporter
 {
 private:
-	int parse_dib_bitmapinfoheader(std::ifstream &input, BITMAPINFOHEADER &header);
+	int parse_dib_bitmapinfoheader(std::ifstream &input, BITMAP_INFOHEADER &header);
 public:
 	virtual Content *process(char *path);
 
