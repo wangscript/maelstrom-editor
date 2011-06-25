@@ -96,10 +96,9 @@ extern "C"
 
 		__int32 dib_header_size;
 		input.read(reinterpret_cast<char*>(&dib_header_size), sizeof(__int32));
-
+		input.seekg(-4, std::ios_base::cur);
 		if(dib_header_size == BITMAPINFOHEADER_SIZE)
 		{
-			input.seekg(-4, std::ios_base::cur);
 			BITMAPINFOHEADER dib_header;
 			if(this->parse_dib_bitmapinfoheader(input, dib_header) != 0)
 			{
@@ -143,6 +142,17 @@ extern "C"
 
 			texture->set_pchar_value("PIXELDATA", pixel_data);
 			texture->set_int_value("PIXELDATA_LEN", new int(dib_header.biSizeImage));
+		}
+		else if(dib_header_size == BITMAPV3INFOHEADER_SIZE)
+		{
+			BITMAPV3HEADER dib_header;
+			input.read(reinterpret_cast<char*>(&dib_header), sizeof(dib_header));
+			char *pixel_data = new char[dib_header.bV4SizeImage];
+			input.seekg(header.bfOffBits, std::ios_base::beg);
+			input.read(pixel_data, dib_header.bV4SizeImage);
+
+			texture->set_pchar_value("PIXELDATA", pixel_data);
+			texture->set_int_value("PIXELDATA_LEN", new int(dib_header.bV4SizeImage));
 		}
 
 		return texture;

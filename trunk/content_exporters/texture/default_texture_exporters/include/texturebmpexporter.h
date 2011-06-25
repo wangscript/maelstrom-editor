@@ -4,6 +4,25 @@
 #include <fstream>
 #include "C:\Projects\maelstrom-engine\maelstrom-editor\vacp\plugin_header\vacp_Plugin_common.h"
 
+typedef struct tagBITMAPV3HEADER
+{
+	    DWORD        bV4Size;
+        LONG         bV4Width;
+        LONG         bV4Height;
+        WORD         bV4Planes;
+        WORD         bV4BitCount;
+        DWORD        bV4V4Compression;
+        DWORD        bV4SizeImage;
+        LONG         bV4XPelsPerMeter;
+        LONG         bV4YPelsPerMeter;
+        DWORD        bV4ClrUsed;
+        DWORD        bV4ClrImportant;
+        DWORD        bV4RedMask;
+        DWORD        bV4GreenMask;
+        DWORD        bV4BlueMask;
+        DWORD        bV4AlphaMask;
+} BITMAPV3HEADER;
+
 class TextureData : public ITextureData
 {
 private:
