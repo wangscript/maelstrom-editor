@@ -1,6 +1,7 @@
 #include <QtCore/QCoreApplication>
 #include <iostream>
 #include <pipeline.h>
+#include <stdlib.h>
 
 #define BUILD_ACTOR	"ba"
 #define BUILD_STATIC	"bs"
