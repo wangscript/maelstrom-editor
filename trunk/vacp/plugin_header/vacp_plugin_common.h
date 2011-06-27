@@ -3,14 +3,26 @@
 
 #include <map>
 #include <string>
+#include <cstring>
 #include <sstream>
+#include <iostream>
 
 struct cmp_str
 {
-    bool operator()(const char *a, const char *b)
-    {
-        return strcmp(a, b) < 0;
-    }
+	bool operator()(const char *a, const char *b)
+	{
+		return strcmp(a, b) < 0;
+	}
+};
+
+// Should this really be needed?
+struct cmp_stdstr
+{
+	bool operator()(std::string *a, std::string *b)
+	{
+		std::cout << "comparing " << *a << " with " << *b << " results in " << (a->compare(*b)) << std::endl;
+		return (a->compare(*b) == 0);
+	}
 };
 
 class Content
@@ -117,7 +129,7 @@ public:
 class ConfigMap
 {
 private:
-	std::map<std::string, std::string*> conf_map;
+	std::map<std::string*, std::string*, cmp_stdstr> conf_map;
 public:
 	explicit ConfigMap(char *config)
 	{
@@ -126,11 +138,14 @@ public:
 		std::stringstream stream(config_string);
 		while(std::getline(stream, key, ';'))
 		{
+			std::cout << "Found configkey '" << key << "'" << std::endl;
 			std::string value;
 			if(std::getline(stream, value, ';'))
 			{
+				std::cout << "Found configvalue '" << value << "'" << std::endl;
+				std::string *pKey = new std::string(key);
 				std::string *pValue = new std::string(value);
-				this->conf_map.insert(std::pair<std::string, std::string*>(key, pValue));
+				this->conf_map.insert(std::pair<std::string*, std::string*>(pKey, pValue));
 			}
 		}
 	}
@@ -138,12 +153,15 @@ public:
 	std::string *get_config(std::string &key)
 	{
 		std::string *value = NULL;
-		std::map<std::string, std::string*>::iterator it = this->conf_map.find(key);
+		std::cout << "get_config: " << key << std::endl;
+		std::map<std::string*, std::string*, cmp_stdstr>::iterator it = this->conf_map.find(&key);
 		if(it != this->conf_map.end())
 		{
+			std::cout << "Found " << key << ": " << (*it).first << "/" << (*it).second << std::endl;
 			value = (*it).second;
 		}
 		return value;
+		return NULL;	
 	}
 };
 
@@ -151,11 +169,13 @@ class ContentPlugin
 {
 private:
 	ConfigMap *config;
+	std::string last_error_msg;
 protected:
 	ContentPlugin()
 	{
 		this->config = NULL;
 	}
+
 	void parse_config(char *config_input)
 	{
 		if(this->config)
@@ -173,13 +193,24 @@ protected:
 		int value;
 		std::stringstream stream(str);
 		stream >> value;
-		if(!stream.good())
+		// Stream.good() seems to return false even if conversion didnt fail. Must find another way to convert str to int.
+		/*if(!stream.good())
 		{
 			std::string msg("Failed to convert string to int: ");
 			msg.append(str);
 			throw new FailedConversionException(msg);
-		}
+		}*/
 		return value;
+	}
+
+	void set_last_error_msg(std::string &msg)
+	{
+		this->last_error_msg = msg;
+	}
+public:
+	std::string get_last_error_msg()
+	{
+		return this->last_error_msg;
 	}
 };
 
@@ -215,7 +246,7 @@ public:
 //template <class T>
 class ContentExporterFactory : public ContentFactoryBase
 {
-public:
+public:	
     explicit ContentExporterFactory(char *name, char *config) : ContentFactoryBase(name, config)
     {
     }
@@ -242,20 +273,5 @@ public:
     virtual ContentCompiler* create(void) = 0;
     virtual void destroy(ContentCompiler*) = 0;
 };
-
-//#if !defined(NO_PLUGIN_HEADER)
-//extern "C" __declspec(dllexport) void get_exporter_name(char *buffer, unsigned int buffer_size)
-//{
-//	strcpy_s(buffer, buffer_size, EXPORTER_NAME);
-//}
-//
-//extern "C" __declspec(dllexport) void get_compiler_name(char *buffer, unsigned int buffer_size)
-//{
-//	strcpy_s(buffer, buffer_size, COMPILER_NAME);
-//}
-//
-////extern "C" __declspec(dllexport) void get_compiler_settings_meta(
-//#endif
-
 
 #endif // VACP_PLUGIN_COMMON_H

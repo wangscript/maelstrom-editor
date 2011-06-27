@@ -1,9 +1,31 @@
 #ifndef _DDS_H_
 #define _DDS_H_
 
+#if defined(__linux)
+#include <stdint.h>
+typedef unsigned char		U8;
+typedef unsigned short		U16;
+typedef unsigned int 		U32;
+typedef signed int		I32;
+
+#define PACK(definition) \
+	definition __attribute__((packed))
+#endif
+#if defined(WIN32)
+typedef unsigned __int8		U8;
+typedef unsigned __int16	U16;
+typedef unsigned __int32	U32;
+typedef __int32			I32;
+
+#define PACK(definition) \
+	#pragma pack(push,1) \
+	definition \
+	#pragma pack(pop)
+#endif
+
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
-                ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) |   \
-                ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24 ))
+                ((U8)(U8)(ch0) | ((U8)(U8)(ch1) << 8) |   \
+                ((U8)(U8)(ch2) << 16) | ((U8)(U8)(ch3) << 24 ))
 
 #define DDS_MAGIC 0x20534444 // "DDS "
 
@@ -12,66 +34,66 @@ typedef enum DXGI_FORMAT
     DXGI_FORMAT_UNKNOWN	                    = 0,
     DXGI_FORMAT_R32G32B32A32_TYPELESS       = 1,
     DXGI_FORMAT_R32G32B32A32_FLOAT          = 2,
-    DXGI_FORMAT_R32G32B32A32_UINT           = 3,
+    DXGI_FORMAT_R32G32B32A32_U32           = 3,
     DXGI_FORMAT_R32G32B32A32_SINT           = 4,
     DXGI_FORMAT_R32G32B32_TYPELESS          = 5,
     DXGI_FORMAT_R32G32B32_FLOAT             = 6,
-    DXGI_FORMAT_R32G32B32_UINT              = 7,
+    DXGI_FORMAT_R32G32B32_U32              = 7,
     DXGI_FORMAT_R32G32B32_SINT              = 8,
     DXGI_FORMAT_R16G16B16A16_TYPELESS       = 9,
     DXGI_FORMAT_R16G16B16A16_FLOAT          = 10,
     DXGI_FORMAT_R16G16B16A16_UNORM          = 11,
-    DXGI_FORMAT_R16G16B16A16_UINT           = 12,
+    DXGI_FORMAT_R16G16B16A16_U32           = 12,
     DXGI_FORMAT_R16G16B16A16_SNORM          = 13,
     DXGI_FORMAT_R16G16B16A16_SINT           = 14,
     DXGI_FORMAT_R32G32_TYPELESS             = 15,
     DXGI_FORMAT_R32G32_FLOAT                = 16,
-    DXGI_FORMAT_R32G32_UINT                 = 17,
+    DXGI_FORMAT_R32G32_U32                 = 17,
     DXGI_FORMAT_R32G32_SINT                 = 18,
     DXGI_FORMAT_R32G8X24_TYPELESS           = 19,
-    DXGI_FORMAT_D32_FLOAT_S8X24_UINT        = 20,
+    DXGI_FORMAT_D32_FLOAT_S8X24_U32        = 20,
     DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS    = 21,
-    DXGI_FORMAT_X32_TYPELESS_G8X24_UINT     = 22,
+    DXGI_FORMAT_X32_TYPELESS_G8X24_U32     = 22,
     DXGI_FORMAT_R10G10B10A2_TYPELESS        = 23,
     DXGI_FORMAT_R10G10B10A2_UNORM           = 24,
-    DXGI_FORMAT_R10G10B10A2_UINT            = 25,
+    DXGI_FORMAT_R10G10B10A2_U32            = 25,
     DXGI_FORMAT_R11G11B10_FLOAT             = 26,
     DXGI_FORMAT_R8G8B8A8_TYPELESS           = 27,
     DXGI_FORMAT_R8G8B8A8_UNORM              = 28,
     DXGI_FORMAT_R8G8B8A8_UNORM_SRGB         = 29,
-    DXGI_FORMAT_R8G8B8A8_UINT               = 30,
+    DXGI_FORMAT_R8G8B8A8_U32               = 30,
     DXGI_FORMAT_R8G8B8A8_SNORM              = 31,
     DXGI_FORMAT_R8G8B8A8_SINT               = 32,
     DXGI_FORMAT_R16G16_TYPELESS             = 33,
     DXGI_FORMAT_R16G16_FLOAT                = 34,
     DXGI_FORMAT_R16G16_UNORM                = 35,
-    DXGI_FORMAT_R16G16_UINT                 = 36,
+    DXGI_FORMAT_R16G16_U32                 = 36,
     DXGI_FORMAT_R16G16_SNORM                = 37,
     DXGI_FORMAT_R16G16_SINT                 = 38,
     DXGI_FORMAT_R32_TYPELESS                = 39,
     DXGI_FORMAT_D32_FLOAT                   = 40,
     DXGI_FORMAT_R32_FLOAT                   = 41,
-    DXGI_FORMAT_R32_UINT                    = 42,
+    DXGI_FORMAT_R32_U32                    = 42,
     DXGI_FORMAT_R32_SINT                    = 43,
     DXGI_FORMAT_R24G8_TYPELESS              = 44,
-    DXGI_FORMAT_D24_UNORM_S8_UINT           = 45,
+    DXGI_FORMAT_D24_UNORM_S8_U32           = 45,
     DXGI_FORMAT_R24_UNORM_X8_TYPELESS       = 46,
-    DXGI_FORMAT_X24_TYPELESS_G8_UINT        = 47,
+    DXGI_FORMAT_X24_TYPELESS_G8_U32        = 47,
     DXGI_FORMAT_R8G8_TYPELESS               = 48,
     DXGI_FORMAT_R8G8_UNORM                  = 49,
-    DXGI_FORMAT_R8G8_UINT                   = 50,
+    DXGI_FORMAT_R8G8_U32                   = 50,
     DXGI_FORMAT_R8G8_SNORM                  = 51,
     DXGI_FORMAT_R8G8_SINT                   = 52,
     DXGI_FORMAT_R16_TYPELESS                = 53,
     DXGI_FORMAT_R16_FLOAT                   = 54,
     DXGI_FORMAT_D16_UNORM                   = 55,
     DXGI_FORMAT_R16_UNORM                   = 56,
-    DXGI_FORMAT_R16_UINT                    = 57,
+    DXGI_FORMAT_R16_U32                    = 57,
     DXGI_FORMAT_R16_SNORM                   = 58,
     DXGI_FORMAT_R16_SINT                    = 59,
     DXGI_FORMAT_R8_TYPELESS                 = 60,
     DXGI_FORMAT_R8_UNORM                    = 61,
-    DXGI_FORMAT_R8_UINT                     = 62,
+    DXGI_FORMAT_R8_U32                     = 62,
     DXGI_FORMAT_R8_SNORM                    = 63,
     DXGI_FORMAT_R8_SINT                     = 64,
     DXGI_FORMAT_A8_UNORM                    = 65,
@@ -109,29 +131,29 @@ typedef enum DXGI_FORMAT
     DXGI_FORMAT_BC7_TYPELESS                = 97,
     DXGI_FORMAT_BC7_UNORM                   = 98,
     DXGI_FORMAT_BC7_UNORM_SRGB              = 99,
-    DXGI_FORMAT_FORCE_UINT                  = 0xffffffff
+    DXGI_FORMAT_FORCE_U32                  = 0xffffffff
 } DXGI_FORMAT;
 
-enum D3D11_RESOURCE_DIMENSION
+typedef enum D3D11_RESOURCE_DIMENSION
 {	D3D11_RESOURCE_DIMENSION_UNKNOWN	= 0,
-	D3D11_RESOURCE_DIMENSION_BUFFER	= 1,
+	D3D11_RESOURCE_DIMENSION_BUFFER		= 1,
 	D3D11_RESOURCE_DIMENSION_TEXTURE1D	= 2,
 	D3D11_RESOURCE_DIMENSION_TEXTURE2D	= 3,
 	D3D11_RESOURCE_DIMENSION_TEXTURE3D	= 4
-} 	D3D11_RESOURCE_DIMENSION;
+} D3D11_RESOURCE_DIMENSION;
 
-
+PACK(
 struct DDS_PIXELFORMAT
 {
-    DWORD dwSize;
-    DWORD dwFlags;
-    DWORD dwFourCC;
-    DWORD dwRGBBitCount;
-    DWORD dwRBitMask;
-    DWORD dwGBitMask;
-    DWORD dwBBitMask;
-    DWORD dwABitMask;
-};
+    U32 dwSize;
+    U32 dwFlags;
+    U32 dwFourCC;
+    U32 dwRGBBitCount;
+    U32 dwRBitMask;
+    U32 dwGBitMask;
+    U32 dwBBitMask;
+    U32 dwABitMask;
+});
 
 #define DDS_FOURCC      0x00000004  // DDPF_FOURCC
 #define DDS_RGB         0x00000040  // DDPF_RGB
@@ -196,29 +218,30 @@ const DDS_PIXELFORMAT DDSPF_DX10 =
 
 #define DDS_FLAGS_VOLUME 0x00200000 // DDSCAPS2_VOLUME
 
+PACK(
 typedef struct
 {
-    DWORD dwSize;
-    DWORD dwHeaderFlags;
-    DWORD dwHeight;
-    DWORD dwWidth;
-    DWORD dwPitchOrLinearSize;
-    DWORD dwDepth; // only if DDS_HEADER_FLAGS_VOLUME is set in dwHeaderFlags
-    DWORD dwMipMapCount;
-    DWORD dwReserved1[11];
+    U32 dwSize;
+    U32 dwHeaderFlags;
+    U32 dwHeight;
+    U32 dwWidth;
+    U32 dwPitchOrLinearSize;
+    U32 dwDepth; // only if DDS_HEADER_FLAGS_VOLUME is set in dwHeaderFlags
+    U32 dwMipMapCount;
+    U32 dwReserved1[11];
     DDS_PIXELFORMAT ddspf;
-    DWORD dwSurfaceFlags;
-    DWORD dwCubemapFlags;
-    DWORD dwReserved2[3];
-} DDS_HEADER;
+    U32 dwSurfaceFlags;
+    U32 dwCubemapFlags;
+    U32 dwReserved2[3];
+}) DDS_HEADER;
 
 typedef struct
 {
     DXGI_FORMAT dxgiFormat;
     D3D11_RESOURCE_DIMENSION resourceDimension;
-    UINT miscFlag;
-    UINT arraySize;
-    UINT reserved;
+    U32 miscFlag;
+    U32 arraySize;
+    U32 reserved;
 } DDS_HEADER_DXT10;
 
 

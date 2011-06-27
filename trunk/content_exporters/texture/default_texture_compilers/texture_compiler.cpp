@@ -3,26 +3,59 @@
 #include <textureddscompiler.h>
 #include <sstream>
 #include <string>
-
+#include <iostream>
 #define DX10_PIXELFORMAT	808540228UL
-#define CONFIG_MIPMAP		std::string("Generate mipmap")
+#define CONFIG_MIPMAP		std::string("Mipmap")
 #define CONFIG_COMPRESSION	std::string("Compression")
+
+#if defined(WIN32)
+#define EXPORT	__declspec(dllexport)
+#endif
+
+#if defined(__linux)
+#define EXPORT
+#endif
 
 extern "C"
 {
 	int TextureDDSCompiler::prepare_dds_header(DDS_HEADER &header, Content *input)
 	{
+		memset(&header, 0, sizeof(DDS_HEADER));
+
 		header.dwSize = 124;
-		header.dwHeaderFlags =
+		header.dwHeaderFlags = 
 			DDS_HEADER_FLAGS_TEXTURE;
 
-		std::string *mipmap_value = ContentCompiler::get_config(CONFIG_MIPMAP);
+		int *width = input->get_int_value("WIDTH");
+		int *height = input->get_int_value("HEIGHT");
+		if(!width)
+		{
+			std::string msg("Content does not contain expected key WIDTH.");
+			ContentPlugin::set_last_error_msg(msg);
+			return -1;
+		}
+
+		if(!height)
+		{
+			std::string msg("Content does not contain expected key HEIGHT.");
+			ContentPlugin::set_last_error_msg(msg);
+			return -1;
+		}
+		header.dwHeight	= *height;
+		header.dwWidth = *width;
+		std::cout << "PreCHECK mipmap" << std::endl;
+		std::string mipmap = CONFIG_MIPMAP;
+		std::string *mipmap_value = ContentCompiler::get_config(mipmap);
 		if(!mipmap_value)
 		{
+			std::cout << "CHECK mipmap" << std::endl;
+			std::string msg("No mipmap configuration was supplied.");
+			ContentPlugin::set_last_error_msg(msg);
 			return -1;
 		}
 		else
 		{
+			std::cout << "Fleh mipmap" << std::endl;
 			try
 			{
 				header.dwMipMapCount = ContentCompiler::str_to_int(*mipmap_value);
@@ -30,55 +63,65 @@ extern "C"
 			}
 			catch(std::exception &ex)
 			{
+				std::cout << "mipmap fail" << std::endl;
+				std::string msg("Invalid mipmap value.");
+				ContentPlugin::set_last_error_msg(msg);
 				return -1;
 			}
 		}
 
-		DDS_PIXELFORMAT pf;
-		std::string *compression_value = ContentCompiler::get_config(CONFIG_COMPRESSION);
+		//DDS_PIXELFORMAT pf;
+		//memset(&pf, 0, sizeof(DDS_PIXELFORMAT));
+		std::cout << "Checking compression" << std::endl;
+		std::string compression = CONFIG_COMPRESSION;
+		std::string *compression_value = ContentCompiler::get_config(compression);
 		if(!compression_value)
 		{
+			std::cout << "compression fail" << std::endl;
+			std::string msg("No compression configuration was supplied.");
+			ContentPlugin::set_last_error_msg(msg);
 			return -1;
 		}
 		else
 		{
+			std::cout << "compression nonfail " << *compression_value << std::endl;
 			if(compression_value->compare("None") == 0)
 			{
-				pf = DDSPF_A8R8G8B8;
+				std::cout << "No compression." << std::endl;
+				header.ddspf = DDSPF_A8R8G8B8;
 			}
 			else if(compression_value->compare("DXT1") == 0)
 			{
-				pf = DDSPF_DXT1;
+				header.ddspf = DDSPF_DXT1;
 			}
 			else if(compression_value->compare("DXT2") == 0)
 			{
-				pf = DDSPF_DXT2;
+				header.ddspf = DDSPF_DXT2;
 			}
 			else if(compression_value->compare("DXT3") == 0)
 			{
-				pf = DDSPF_DXT3;
+				header.ddspf = DDSPF_DXT3;
 			}
 			else if(compression_value->compare("DXT4") == 0)
 			{
-				pf = DDSPF_DXT4;
+				header.ddspf = DDSPF_DXT4;
 			}
 			else if(compression_value->compare("DXT5") == 0)
 			{
-				pf = DDSPF_DXT5;
+				header.ddspf = DDSPF_DXT5;
 			}
 			else if(compression_value->compare("DX10") == 0)
 			{
-				pf = DDSPF_DX10;
+				header.ddspf = DDSPF_DX10;
 			}
 			else
 			{
+				std::string msg("Invalid compression value.");
+				ContentPlugin::set_last_error_msg(msg);
 				return -1;
 			}
 		}
-		header.ddspf = pf;
-
-		header.dwHeight	= *input->get_int_value("HEIGHT");
-		header.dwWidth = *input->get_int_value("WIDTH");
+		//header.ddspf = pf;
 
 		return 0;
 	}
@@ -107,6 +150,8 @@ extern "C"
 		output << header.dwCubemapFlags; // dwCaps2 on MSDN documentation;
 		for(int i = 0; i < 3; i++)
 			output << header.dwReserved2[i];*/
+		std::cout << header.dwSize << "|" << header.dwHeaderFlags << "|" << header.dwHeight << "|" << header.dwWidth << "|" << header.dwPitchOrLinearSize << "|"<< header.dwDepth << "|" << header.dwMipMapCount << std::endl;
+		std::cout << "ddspf" << "|" << header.ddspf.dwSize << "|" << header.ddspf.dwFlags << "|" << header.ddspf.dwFourCC << "|" << header.ddspf.dwRGBBitCount << "|" << header.ddspf.dwRBitMask << std::endl;
 		output.write(reinterpret_cast<char*>(&header), sizeof(DDS_HEADER));
 	}
 
@@ -116,11 +161,15 @@ extern "C"
 
 		std::ofstream output(path, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
 		if(!output.good())
+		{
+			std::string msg("Unable to open or create output file.");
+			ContentPlugin::set_last_error_msg(msg);
 			return -1;
+		}
 
 		DDS_HEADER header;
 
-		if(!prepare_dds_header(header, input))
+		if(prepare_dds_header(header, input) != 0)
 		{
 			output.close();
 			return -1;
@@ -134,15 +183,31 @@ extern "C"
 		}
 
 		char *data = input->get_pchar_value("PIXELDATA");
+		if(!data)
+		{
+			std::string msg("Content does not contain expected key PIXELDATA.");
+			ContentPlugin::set_last_error_msg(msg);
+			output.close();
+			return -1;
+		}
+
+
 		int *data_len = input->get_int_value("PIXELDATA_LEN");
 		if(!data_len)
 		{
+			std::string msg("Content does not contain expected key PIXELDATA_LEN.");
+			ContentPlugin::set_last_error_msg(msg);
 			output.close();
 			return -1;
 		}
 
 		output.write(data, *data_len);
 
+		char *header_d = reinterpret_cast<char*>(&header);
+		std::cout << "LOLe" << std::endl;
+		for(int i = 0; i < 124; i++)
+			std::cout << header_d[i];
+		std::cout << std::endl << "eLOL" << std::endl;
 		output.close();
 
 		return 0;
@@ -153,7 +218,7 @@ extern "C"
 	public:
 		TextureDDSCompilerFactory() : ContentCompilerFactory(
 			"DDS Texture Compiler",
-			"Generate mipmap;bool;false;Compression;list;None,DXT1,DXT2,DXT3,DXT4,DXT5")
+			"Mipmap;int;false;Compression;list;None,DXT1,DXT2,DXT3,DXT4,DXT5")
 		{
 		}
 
@@ -168,7 +233,7 @@ extern "C"
 		}
 	};
 
-	__declspec(dllexport) ContentCompilerFactory *create_compiler_factory(void)
+	EXPORT ContentCompilerFactory *create_compiler_factory(void)
 	{
 		return new TextureDDSCompilerFactory;
 	}
