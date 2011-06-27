@@ -5,6 +5,9 @@
 #include <list>
 #include <texturebmpexporter.h>
 #include <stdlib.h>
+#include <cmath>
+#include <cstring>
+#include <algorithm>
 
 
 #define BUFFER_SIZE			512
@@ -21,85 +24,48 @@
 
 #if defined(WIN32)
 #include <Windows.h>
+#define EXPORT __declspec(dllexport)
+#endif
+
+#if defined(__linux)
+#define EXPORT
 #endif
 
 extern "C"
 {
-	TextureData::TextureData(char *data, unsigned int length, unsigned int stride)
-		: data(data), length(length), stride(stride)
+	BmpExporter::BmpExporter()
 	{
+		this->last_error = NULL;
 	}
-
-	char *TextureData::get_data(void)
-	{
-		return this->data;
-	}
-
-	void TextureData::set_data(char *data)
-	{
-		this->data = data;
-	}
-
-	unsigned int TextureData::get_data_length(void)
-	{
-		return this->length;
-	}
-
-	void TextureData::set_data_length(unsigned int length)
-	{
-		this->length = length;
-	}
-
-	unsigned int TextureData::get_stride(void)
-	{
-		return this->stride;
-	}
-
-	void TextureData::set_stride(unsigned int stride)
-	{
-		this->stride = stride;
-	}
-
-	int TextureData::get_width(void)
-	{
-		return this->width;
-	}
-
-	void TextureData::set_width(int width)
-	{
-		this->width = width;
-	}
-
-	int TextureData::get_height(void)
-	{
-		return this->height;
-	}
-
-	void TextureData::set_height(int height)
-	{
-		this->height = height;
-	}
-
 	Content *BmpExporter::process(char *path)
 	{
+
 		std::ifstream input(path, std::ifstream::binary);
 		if(!input.good())
-			return NULL;
-
-		Content *texture = new Content;
-
-		BITMAPFILEHEADER header;
-
-		input.read(reinterpret_cast<char*>(&header), sizeof(BITMAPFILEHEADER));
-		if(header.bfType != BITMAPSIGNATURE)
 		{
-			input.close();
+			std::string msg("Could not open file for processing.");
+			msg.append(path);
+			ContentPlugin::set_last_error_msg(msg);
 			return NULL;
 		}
 
-		__int32 dib_header_size;
-		input.read(reinterpret_cast<char*>(&dib_header_size), sizeof(__int32));
+		Content *texture = new Content;
+
+		BITMAP_FILEHEADER header;
+
+		input.read(reinterpret_cast<char*>(&header), sizeof(BITMAP_FILEHEADER));
+		if(header.bfType != BITMAPSIGNATURE)
+		{
+			input.close();
+			std::string msg("Input is not a valid Bitmap Image File.");
+			ContentPlugin::set_last_error_msg(msg);
+			return NULL;
+		}
+
+		I32 dib_header_size;
+		input.read(reinterpret_cast<char*>(&dib_header_size), sizeof(I32));
 		input.seekg(-4, std::ios_base::cur);
+
 		if(dib_header_size == BITMAPINFOHEADER_SIZE)
 		{
 			BITMAP_INFOHEADER dib_header;
@@ -157,15 +123,26 @@ extern "C"
 			texture->set_pchar_value("PIXELDATA", pixel_data);
 			texture->set_int_value("PIXELDATA_LEN", new int(dib_header.bV4SizeImage));
 		}
-
+		else
+		{
+			input.close();
+			std::string msg("Unkown DIB header size.");
+			ContentPlugin::set_last_error_msg(msg);
+			return NULL;
+		}
+		input.close();
 		return texture;
 	}
 
 	int BmpExporter::parse_dib_bitmapinfoheader(std::ifstream &input, BITMAP_INFOHEADER &header)
 	{
 		input.read(reinterpret_cast<char*>(&header), sizeof(header));
-		if(header.biCompression != BI_RGB)
+		if(header.biCompression != CMP_RGB)
+		{
+			std::string msg("Bitmap compression is not supported.");
+			ContentPlugin::set_last_error_msg(msg);
 			return -1;
+		}
 
 		return 0;
 	}
@@ -194,7 +171,7 @@ extern "C"
 		}
 	};
 
-	__declspec(dllexport) ContentExporterFactory *create_exporter_factory(void)
+	EXPORT ContentExporterFactory *create_exporter_factory(void)
 	{
 		return new BmpExporterFactory;
 	}

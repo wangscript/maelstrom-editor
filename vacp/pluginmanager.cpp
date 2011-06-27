@@ -36,7 +36,7 @@ void PluginManager::register_plugins(void)
             QLibrary *lib = new QLibrary(dir_entries.at(i).absoluteFilePath());
             if(!lib->load())
             {
-                std::cerr << "Failed to load plugin: " << dir_entries.at(i).fileName().toLocal8Bit().constData() << std::endl;
+                std::cerr << "Failed to load plugin: " << dir_entries.at(i).fileName().toLocal8Bit().constData() << std::endl << "Error information: " << lib->errorString().toLocal8Bit().constData() << std::endl;
                 lib->unload();
                 delete lib;
             }

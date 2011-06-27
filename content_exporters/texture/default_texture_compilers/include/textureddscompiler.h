@@ -1,8 +1,8 @@
 #ifndef TEXTUREDDSCOMPILER_H
 #define TEXTUREDDSCOMPILER_H
 
-#include "C:\Projects\maelstrom-engine\maelstrom-editor\vacp\plugin_header\vacp_Plugin_common.h"
-#include <dds_stripped.h>
+#include <../../../../vacp/plugin_header/vacp_plugin_common.h>
+#include <ddsdef.h>
 
 class TextureDDSCompiler : public ContentCompiler
 	{
