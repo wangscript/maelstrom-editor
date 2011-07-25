@@ -8,8 +8,8 @@ typedef unsigned short		U16;
 typedef unsigned int 		U32;
 typedef signed int		I32;
 
-#define PACK(definition) \
-	definition __attribute__((packed))
+#define PACKED(definition) \
+	definition __attribute__((packed));
 #endif
 #if defined(WIN32)
 typedef unsigned __int8		U8;
@@ -17,26 +17,27 @@ typedef unsigned __int16	U16;
 typedef unsigned __int32	U32;
 typedef __int32			I32;
 
-#define PACK(definition) \
-	#pragma pack(push,1) \
-	definition \
-	#pragma pack(pop)
+#define PACKED(definition) \
+	__pragma(pack(push, 1)) \
+	definition; \
+	__pragma(pack(pop))
+
 #endif
 
 #include <fstream>
 #include <../../../../vacp/plugin_header/vacp_plugin_common.h>
 
-
-PACK(
-typedef struct tag_BITMAPFILEHEADER {
-	U16			bfType;
+PACKED(
+struct BITMAP_FILEHEADER {
+		U16			bfType;
         U32			bfSize;
         U16			bfReserved1;
         U16			bfReserved2;
         U32			bfOffBits;
-}) BITMAP_FILEHEADER;
+})
 
-typedef struct tag_BITMAPINFOHEADER{
+PACKED(
+struct BITMAP_INFOHEADER{
         U32			biSize;
         I32			biWidth;
         I32			biHeight;
@@ -48,26 +49,27 @@ typedef struct tag_BITMAPINFOHEADER{
         I32			biYPelsPerMeter;
         U32			biClrUsed;
         U32			biClrImportant;
-} BITMAP_INFOHEADER;
+})
 
-typedef struct tag_BITMAPV3HEADER
+PACKED(
+struct BITMAP_V3HEADER
 {
-	U32		        bV4Size;
-        I32			bV4Width;
-        I32			bV4Height;
+		U32		        bV4Size;
+        I32				bV4Width;
+        I32				bV4Height;
         U16		        bV4Planes;
         U16		        bV4BitCount;
         U32		        bV4V4Compression;
         U32		        bV4SizeImage;
-        I32			bV4XPelsPerMeter;
-        I32			bV4YPelsPerMeter;
+        I32				bV4XPelsPerMeter;
+        I32				bV4YPelsPerMeter;
         U32		        bV4ClrUsed;
         U32		        bV4ClrImportant;
         U32		        bV4RedMask;
         U32		        bV4GreenMask;
         U32		        bV4BlueMask;
         U32		        bV4AlphaMask;
-} BITMAP_V3HEADER;
+})
 
 enum BITMAP_COMPRESSION
 {
