@@ -8,8 +8,8 @@ typedef unsigned short		U16;
 typedef unsigned int 		U32;
 typedef signed int		I32;
 
-#define PACK(definition) \
-	definition __attribute__((packed))
+#define PACKED(definition) \
+	definition __attribute__((packed));
 #endif
 #if defined(WIN32)
 typedef unsigned __int8		U8;
@@ -17,10 +17,11 @@ typedef unsigned __int16	U16;
 typedef unsigned __int32	U32;
 typedef __int32			I32;
 
-#define PACK(definition) \
-	#pragma pack(push,1) \
-	definition \
-	#pragma pack(pop)
+#define PACKED(definition) \
+	__pragma(pack(push, 1)) \
+	definition; \
+	__pragma(pack(pop))
+
 #endif
 
 #define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
@@ -142,7 +143,7 @@ typedef enum D3D11_RESOURCE_DIMENSION
 	D3D11_RESOURCE_DIMENSION_TEXTURE3D	= 4
 } D3D11_RESOURCE_DIMENSION;
 
-PACK(
+PACKED(
 struct DDS_PIXELFORMAT
 {
     U32 dwSize;
@@ -153,7 +154,7 @@ struct DDS_PIXELFORMAT
     U32 dwGBitMask;
     U32 dwBBitMask;
     U32 dwABitMask;
-});
+})	
 
 #define DDS_FOURCC      0x00000004  // DDPF_FOURCC
 #define DDS_RGB         0x00000040  // DDPF_RGB
@@ -218,31 +219,32 @@ const DDS_PIXELFORMAT DDSPF_DX10 =
 
 #define DDS_FLAGS_VOLUME 0x00200000 // DDSCAPS2_VOLUME
 
-PACK(
-typedef struct
+PACKED(
+struct DDS_HEADER
 {
     U32 dwSize;
     U32 dwHeaderFlags;
     U32 dwHeight;
     U32 dwWidth;
     U32 dwPitchOrLinearSize;
-    U32 dwDepth; // only if DDS_HEADER_FLAGS_VOLUME is set in dwHeaderFlags
+    U32 dwDepth;
     U32 dwMipMapCount;
     U32 dwReserved1[11];
     DDS_PIXELFORMAT ddspf;
     U32 dwSurfaceFlags;
     U32 dwCubemapFlags;
     U32 dwReserved2[3];
-}) DDS_HEADER;
+})
 
-typedef struct
+PACKED(
+struct DDS_HEADER_DXT10
 {
     DXGI_FORMAT dxgiFormat;
     D3D11_RESOURCE_DIMENSION resourceDimension;
     U32 miscFlag;
     U32 arraySize;
     U32 reserved;
-} DDS_HEADER_DXT10;
+})
 
 
 #endif // _DDS_H

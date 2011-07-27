@@ -84,7 +84,7 @@
     <ClCompile Include="texture_compiler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dds_.h" />
+    <ClInclude Include="include\ddsdef.h" />
     <ClInclude Include="include\textureddscompiler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

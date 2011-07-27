@@ -23,7 +23,7 @@
     <ClInclude Include="include\textureddscompiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dds_.h">
+    <ClInclude Include="include\ddsdef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
