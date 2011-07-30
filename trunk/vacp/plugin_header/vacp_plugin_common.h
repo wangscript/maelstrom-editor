@@ -2,6 +2,7 @@
 #define VACP_PLUGIN_COMMON_H
 
 #include <map>
+#include <vector>
 #include <string>
 #include <cstring>
 #include <sstream>
@@ -25,22 +26,51 @@ struct cmp_stdstr
 	}
 };
 
-class Content
+class IContent
+{
+public:
+	virtual bool exists(char *) = 0;
+	virtual int *get_int_value(char *) = 0;
+	virtual char *get_pchar_value(char *) = 0;
+	virtual bool *get_bool_value(char *) = 0;
+};
+
+
+class Content : public IContent
 {
 private:
-    std::map<char*, char*, cmp_str> attributes;
-public:
-	bool exists(char *key)
+	std::map<unsigned long, char*> *attributes;
+
+	unsigned long calc_str_hash(char *str)
 	{
-		std::map<char *, char*, cmp_str>::iterator it = this->attributes.find(key);
-		return (it != this->attributes.end());
+        unsigned long hash = 5381;
+        int c;
+
+        while (c = *str++)
+            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+        return hash;
+	}
+public:
+
+	Content()
+	{
+		this->attributes = new std::map<unsigned long, char*>;
 	}
 
-    int *get_int_value(char *key)
-    {
-        int *return_value = NULL;
-        std::map<char*, char*, cmp_str>::iterator it = this->attributes.find(key);
-        if(it != this->attributes.end())
+	bool exists(char *key)
+	{
+		int hash = Content::calc_str_hash(key);
+		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
+		return (it != this->attributes->end());
+	}
+
+	int *get_int_value(char *key)
+	{
+		int *return_value = NULL;
+		int hash = Content::calc_str_hash(key);
+		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
+		if(it != this->attributes->end())
 			return_value = reinterpret_cast<int*>(it->second);
 
 		return return_value;
@@ -49,18 +79,20 @@ public:
 	char *get_pchar_value(char *key)
 	{
 		char *return_value = NULL;
-		std::map<char*, char*, cmp_str>::iterator it = this->attributes.find(key);
-		if(it != this->attributes.end())
+		int hash = Content::calc_str_hash(key);
+		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
+		if(it != this->attributes->end())
 			return_value = it->second;
-
+		int ss = this->attributes->size();
 		return return_value;
 	}
 
 	bool *get_bool_value(char *key)
 	{
 		bool *return_value;
-		std::map<char*, char*, cmp_str>::iterator it = this->attributes.find(key);
-		if(it != this->attributes.end())
+		int hash = Content::calc_str_hash(key);
+		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
+		if(it != this->attributes->end())
 			return_value = reinterpret_cast<bool*>(it->second);
 
 		return return_value;
@@ -68,14 +100,15 @@ public:
 
 	int set_pchar_value(char *key, char *value)
 	{
-		std::map<char*, char*, cmp_str>::iterator it = this->attributes.find(key);
-		if(it != this->attributes.end())
+		int hash = Content::calc_str_hash(key);
+		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
+		if(it != this->attributes->end())
 			return -1;
 
-		this->attributes.insert(std::pair<char*, char*>(key, value));
+		this->attributes->insert(std::pair<int, char*>(hash, value));
 		return 0;
 	}
-	
+
 	int set_int_value(char *key, int *value)
 	{
 		return set_pchar_value(key, reinterpret_cast<char*>(value));
@@ -86,16 +119,6 @@ public:
 		return set_pchar_value(key, reinterpret_cast<char*>(value));
 	}
 
-};
-
-class ITextureData
-{
-public:
-    virtual char *get_data(void) = 0;
-    virtual unsigned int get_data_length(void) = 0;
-    virtual int get_width(void) = 0;
-    virtual int get_height(void) = 0;
-    virtual unsigned int get_stride(void) = 0;
 };
 
 class InvalidConfigurationException : std::exception
@@ -196,9 +219,9 @@ protected:
 		// Stream.good() seems to return false even if conversion didnt fail. Must find another way to convert str to int.
 		/*if(!stream.good())
 		{
-			std::string msg("Failed to convert string to int: ");
-			msg.append(str);
-			throw new FailedConversionException(msg);
+		std::string msg("Failed to convert string to int: ");
+		msg.append(str);
+		throw new FailedConversionException(msg);
 		}*/
 		return value;
 	}
@@ -218,8 +241,8 @@ public:
 class ContentExporter : public ContentPlugin
 {
 public:
-    virtual Content* process(char *path) = 0;
-    virtual void destroy(Content*) = 0;
+	virtual IContent* process(char *path) = 0;
+	virtual void destroy(IContent*) = 0;
 };
 
 class ContentFactoryBase
@@ -247,31 +270,31 @@ public:
 class ContentExporterFactory : public ContentFactoryBase
 {
 public:	
-    explicit ContentExporterFactory(char *name, char *config) : ContentFactoryBase(name, config)
-    {
-    }
+	explicit ContentExporterFactory(char *name, char *config) : ContentFactoryBase(name, config)
+	{
+	}
 
-    virtual ContentExporter* create(void) = 0;
-    virtual void destroy(ContentExporter*) = 0;
+	virtual ContentExporter* create(void) = 0;
+	virtual void destroy(ContentExporter*) = 0;
 };
 
 //template <class T>
 class ContentCompiler : public ContentPlugin
 {
 public:
-    virtual int process(Content *input, const char *path, char *config) = 0;
+	virtual int process(IContent *input, const char *path, char *config) = 0;
 };
 
 //template <class T>
 class ContentCompilerFactory : public ContentFactoryBase
 {
 public:
-    explicit ContentCompilerFactory(char *name, const char *config) : ContentFactoryBase(name, config)
-    {
-    }
+	explicit ContentCompilerFactory(char *name, const char *config) : ContentFactoryBase(name, config)
+	{
+	}
 
-    virtual ContentCompiler* create(void) = 0;
-    virtual void destroy(ContentCompiler*) = 0;
+	virtual ContentCompiler* create(void) = 0;
+	virtual void destroy(ContentCompiler*) = 0;
 };
 
 #endif // VACP_PLUGIN_COMMON_H

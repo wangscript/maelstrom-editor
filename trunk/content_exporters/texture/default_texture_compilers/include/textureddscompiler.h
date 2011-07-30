@@ -7,9 +7,9 @@
 class TextureDDSCompiler : public ContentCompiler
 	{
 	private:
-		int prepare_dds_header(DDS_HEADER &header, Content *input);
+		int prepare_dds_header(DDS_HEADER &header, IContent *input);
 		void serialize_dds_header(DDS_HEADER& header, std::ofstream& output);
 	public:
-		virtual int process(Content *input, const char *path, char *config);
+		virtual int process(IContent *input, const char *path, char *config);
 	};
 #endif

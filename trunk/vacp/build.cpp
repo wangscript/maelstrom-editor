@@ -72,19 +72,14 @@ void BuildContext::build_asset(Asset *asset)
         QByteArray asset_source =  codec->fromUnicode(asset->get_source());
         char *source = asset_source.data();
 
-        Content *texture_data = exporter->process(source);
+        IContent *texture_data = exporter->process(source);
         if(texture_data == NULL)
         {
             std::cout << exporter->get_last_error_msg() << std::endl;
         }
-        char *pixels = texture_data->get_pchar_value("PIXELDATA");
-        char c;
-        for(int i = 0; i < 117; i++)
-        {
-            c = pixels[i];
-        }
 
-        int i = *texture_data->get_int_value("WIDTH");
+
+        char *pixels = texture_data->get_pchar_value("PIXELDATA");
 
         ContentCompiler *compiler = this->pipeline.get_texture_compiler(asset->get_compiler());
         QByteArray asset_output = codec->fromUnicode(asset->get_output());
