@@ -26,6 +26,21 @@ struct cmp_stdstr
 	}
 };
 
+class ContentUtil
+{
+public:
+	static unsigned long calc_str_hash(const char *str)
+	{
+        unsigned long hash = 5381;
+        int c;
+
+        while ((c = *str++))
+            hash = ((hash << 5) + hash) + c;
+
+        return hash;
+	}
+};
+
 class IContent
 {
 public:
@@ -40,17 +55,6 @@ class Content : public IContent
 {
 private:
 	std::map<unsigned long, char*> *attributes;
-
-	unsigned long calc_str_hash(char *str)
-	{
-        unsigned long hash = 5381;
-        int c;
-
-        while (c = *str++)
-            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
-        return hash;
-	}
 public:
 
 	Content()
@@ -60,7 +64,7 @@ public:
 
 	bool exists(char *key)
 	{
-		int hash = Content::calc_str_hash(key);
+		int hash = ContentUtil::calc_str_hash(key);
 		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
 		return (it != this->attributes->end());
 	}
@@ -68,7 +72,7 @@ public:
 	int *get_int_value(char *key)
 	{
 		int *return_value = NULL;
-		int hash = Content::calc_str_hash(key);
+		int hash = ContentUtil::calc_str_hash(key);
 		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
 		if(it != this->attributes->end())
 			return_value = reinterpret_cast<int*>(it->second);
@@ -79,7 +83,7 @@ public:
 	char *get_pchar_value(char *key)
 	{
 		char *return_value = NULL;
-		int hash = Content::calc_str_hash(key);
+		int hash = ContentUtil::calc_str_hash(key);
 		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
 		if(it != this->attributes->end())
 			return_value = it->second;
@@ -90,7 +94,7 @@ public:
 	bool *get_bool_value(char *key)
 	{
 		bool *return_value;
-		int hash = Content::calc_str_hash(key);
+		int hash = ContentUtil::calc_str_hash(key);
 		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
 		if(it != this->attributes->end())
 			return_value = reinterpret_cast<bool*>(it->second);
@@ -100,7 +104,7 @@ public:
 
 	int set_pchar_value(char *key, char *value)
 	{
-		int hash = Content::calc_str_hash(key);
+		int hash = ContentUtil::calc_str_hash(key);
 		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
 		if(it != this->attributes->end())
 			return -1;
@@ -152,7 +156,7 @@ public:
 class ConfigMap
 {
 private:
-	std::map<std::string*, std::string*, cmp_stdstr> conf_map;
+	std::map<unsigned long, std::string*> conf_map;
 public:
 	explicit ConfigMap(char *config)
 	{
@@ -168,23 +172,24 @@ public:
 				std::cout << "Found configvalue '" << value << "'" << std::endl;
 				std::string *pKey = new std::string(key);
 				std::string *pValue = new std::string(value);
-				this->conf_map.insert(std::pair<std::string*, std::string*>(pKey, pValue));
+				unsigned long key_hash = ContentUtil::calc_str_hash(pKey->c_str());
+				this->conf_map.insert(std::pair<unsigned long, std::string*>(key_hash	, pValue));
 			}
 		}
 	}
 
 	std::string *get_config(std::string &key)
 	{
+		unsigned long key_hash = ContentUtil::calc_str_hash(key.c_str());
 		std::string *value = NULL;
 		std::cout << "get_config: " << key << std::endl;
-		std::map<std::string*, std::string*, cmp_stdstr>::iterator it = this->conf_map.find(&key);
+		std::map<unsigned long, std::string*>::iterator it = this->conf_map.find(key_hash);
 		if(it != this->conf_map.end())
 		{
 			std::cout << "Found " << key << ": " << (*it).first << "/" << (*it).second << std::endl;
 			value = (*it).second;
 		}
 		return value;
-		return NULL;	
 	}
 };
 
