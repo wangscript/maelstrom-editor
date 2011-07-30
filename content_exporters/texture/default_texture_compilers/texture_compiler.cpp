@@ -18,7 +18,7 @@
 
 extern "C"
 {
-	int TextureDDSCompiler::prepare_dds_header(DDS_HEADER &header, Content *input)
+	int TextureDDSCompiler::prepare_dds_header(DDS_HEADER &header, IContent *input)
 	{
 		memset(&header, 0, sizeof(DDS_HEADER));
 
@@ -155,7 +155,7 @@ extern "C"
 		output.write(reinterpret_cast<char*>(&header), sizeof(DDS_HEADER));
 	}
 
-	int TextureDDSCompiler::process(Content *input, const char *path, char *config)
+	int TextureDDSCompiler::process(IContent *input, const char *path, char *config)
 	{
 		ContentCompiler::parse_config(config);
 

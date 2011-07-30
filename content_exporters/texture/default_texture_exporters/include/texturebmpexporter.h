@@ -80,35 +80,6 @@ enum BITMAP_COMPRESSION
 	CMP_JPEG,
 	CMP_PNG
 };
-
-class TextureData : public ITextureData
-{
-private:
-	char *data;
-	unsigned int length;
-	unsigned int stride;
-	unsigned int width;
-	unsigned int height;
-public:
-	TextureData() {}
-	TextureData(char *data, unsigned int length, unsigned int stride);
-
-	virtual char *get_data(void);
-	void set_data(char *data);
-
-	virtual unsigned int get_data_length(void);
-	void set_data_length(unsigned int length);
-
-	virtual unsigned int get_stride(void);
-	void set_stride(unsigned int stride);
-
-	virtual int get_width(void);
-	void set_width(int width);
-
-	virtual int get_height(void);
-	void set_height(int height);
-};
-
 class BmpExporter : public ContentExporter
 {
 private:
@@ -116,9 +87,9 @@ private:
 	int parse_dib_bitmapinfoheader(std::ifstream &input, BITMAP_INFOHEADER &header);
 public:
 	BmpExporter(void);
-	virtual Content *process(char *path);
+	virtual IContent *process(char *path);
 
-	virtual void destroy(Content *data);
+	virtual void destroy(IContent *data);
 };
 
 #endif

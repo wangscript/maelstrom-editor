@@ -37,7 +37,7 @@ extern "C"
 	{
 		this->last_error = NULL;
 	}
-	Content *BmpExporter::process(char *path)
+	IContent *BmpExporter::process(char *path)
 	{
 
 		std::ifstream input(path, std::ifstream::binary);
@@ -131,6 +131,8 @@ extern "C"
 			return NULL;
 		}
 		input.close();
+
+		char *pdat = texture->get_pchar_value("PIXELDATA");
 		return texture;
 	}
 
@@ -148,7 +150,7 @@ extern "C"
 	}
 
 
-	void BmpExporter::destroy(Content *data)
+	void BmpExporter::destroy(IContent *data)
 	{
 		
 	}
