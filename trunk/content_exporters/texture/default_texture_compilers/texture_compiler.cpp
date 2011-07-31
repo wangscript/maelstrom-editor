@@ -59,7 +59,7 @@ extern "C"
 			try
 			{
 				header.dwMipMapCount = ContentCompiler::str_to_int(*mipmap_value);
-				header.dwHeaderFlags |= DDS_HEADER_FLAGS_MIPMAP;
+				//header.dwHeaderFlags |= DDS_HEADER_FLAGS_MIPMAP;
 			}
 			catch(std::exception &ex)
 			{
@@ -152,14 +152,18 @@ extern "C"
 			output << header.dwReserved2[i];*/
 		std::cout << header.dwSize << "|" << header.dwHeaderFlags << "|" << header.dwHeight << "|" << header.dwWidth << "|" << header.dwPitchOrLinearSize << "|"<< header.dwDepth << "|" << header.dwMipMapCount << std::endl;
 		std::cout << "ddspf" << "|" << header.ddspf.dwSize << "|" << header.ddspf.dwFlags << "|" << header.ddspf.dwFourCC << "|" << header.ddspf.dwRGBBitCount << "|" << header.ddspf.dwRBitMask << std::endl;
+		I32 magic = DDS_MAGIC;
+		int beforep = output.tellp();
+		output.write(reinterpret_cast<char*>(&magic), 4);
+		int afterp = output.tellp();
+		output.flush();
 		output.write(reinterpret_cast<char*>(&header), sizeof(DDS_HEADER));
 	}
 
 	int TextureDDSCompiler::process(IContent *input, const char *path, char *config)
 	{
 		ContentCompiler::parse_config(config);
-
-		std::ofstream output(path, std::ofstream::out | std::ofstream::trunc | std::ofstream::binary);
+		std::ofstream output(path, std::ios::out | std::ios::trunc | std::ios::binary);
 		if(!output.good())
 		{
 			std::string msg("Unable to open or create output file.");
