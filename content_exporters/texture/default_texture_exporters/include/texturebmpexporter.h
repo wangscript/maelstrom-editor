@@ -85,6 +85,10 @@ class BmpExporter : public ContentExporter
 private:
 	char *last_error;
 	int parse_dib_bitmapinfoheader(std::ifstream &input, BITMAP_INFOHEADER &header);
+	void flip_scanlines(char *data, U32 size, U32 stride);
+	void transform_1BPP(char *data, U32 stride, U32 stride_padding, U32 scanlines, char **transformed_data, U32 *transformed_length);
+	void transform_24BPP(char *data, U32 stride, U32 stride_padding, U32 scanlines, char **transformed_data, U32 *transformed_length);
+
 public:
 	BmpExporter(void);
 	virtual IContent *process(char *path);

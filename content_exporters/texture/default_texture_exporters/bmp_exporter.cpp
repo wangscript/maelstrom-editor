@@ -77,14 +77,15 @@ extern "C"
 
 			texture->set_int_value("WIDTH", new int(dib_header.biWidth));
 			texture->set_int_value("HEIGHT", new int(dib_header.biHeight));
-			
+
 			if(dib_header.biBitCount <= 8)
 			{
 				int* palette = new int[dib_header.biClrUsed];
 				input.read(reinterpret_cast<char*>(palette), sizeof(palette));
 			}
-			int row_size = ceil((dib_header.biBitCount * dib_header.biWidth) / 32.0f) * 4;
-		
+			int stride = ceil((dib_header.biBitCount * dib_header.biWidth) / 32.0f) * 4;
+			int stride_padding = stride - ((dib_header.biBitCount / 8) * dib_header.biWidth);
+
 			char *pixel_data = new char[dib_header.biSizeImage];
 			input.seekg(header.bfOffBits, std::ios_base::beg);
 			input.read(pixel_data, dib_header.biSizeImage);
@@ -92,25 +93,27 @@ extern "C"
 			// When height is non-negavite, its scan lines are flipped vertically so we must flip them.
 			if(dib_header.biHeight > 0)
 			{
-				char *pixel_data_temp = new char[dib_header.biSizeImage];
-				int rows = dib_header.biSizeImage / row_size;
+				//this->flip_scanlines(pixel_data, dib_header.biSizeImage, dib_header.biSizeImage / row_size);
+			}
 
-				// Copy all scanline rows into temp buffer in reverse order
-				for(int y = 0; y < rows; y++)
-					memcpy(	static_cast<void*>(&pixel_data_temp[y * row_size]),
-							static_cast<void*>(&pixel_data[(rows - y - 1) * row_size]),
-							row_size);
-
-				// Copy entire temp buffer content into main buffer.
-				memcpy(	static_cast<void*>(pixel_data),
-						static_cast<void*>(pixel_data_temp),
-						dib_header.biSizeImage);
-
-				delete[] pixel_data_temp;
+			// Every texture exporter must export texture data in 32BPP, so we need to transform the bitmap data if it is not 32BPP.
+			char *transformed_pixel_data;
+			U32 transformed_length;
+			switch(dib_header.biBitCount)
+			{
+			case 24:
+				this->transform_24BPP(pixel_data, stride, stride_padding, dib_header.biHeight, &transformed_pixel_data, &transformed_length);
+				//this->transform_24BPP(pixel_data, dib_header.biSizeImage, dib_header.biSizeImage / row_size, &transformed_pixel_data, &transformed_length);
+				delete[] pixel_data;
+				pixel_data = transformed_pixel_data;
+				break;
+			default:
+				transformed_length = dib_header.biSizeImage;
+				break;
 			}
 
 			texture->set_pchar_value("PIXELDATA", pixel_data);
-			texture->set_int_value("PIXELDATA_LEN", new int(dib_header.biSizeImage));
+			texture->set_int_value("PIXELDATA_LEN", new int(transformed_length));
 		}
 		else if(dib_header_size == BITMAPV3INFOHEADER_SIZE)
 		{
@@ -136,6 +139,56 @@ extern "C"
 		return texture;
 	}
 
+	void BmpExporter::flip_scanlines(char *data, U32 size, U32 stride)
+	{
+		char *pixel_data_temp = new char[size];
+		int rows = size / stride;
+
+		// Copy all scanline rows into temp buffer in reverse order
+		for(int y = 0; y < rows; y++)
+			memcpy(	static_cast<void*>(&pixel_data_temp[y * stride]),
+			static_cast<void*>(&data[(rows - y - 1) * stride]),
+			stride);
+
+		// Copy entire temp buffer content into main buffer.
+		memcpy(	static_cast<void*>(data),
+			static_cast<void*>(pixel_data_temp),
+			size);
+
+		delete[] pixel_data_temp;
+	}
+
+	void BmpExporter::transform_24BPP(char *data, U32 stride, U32 stride_padding, U32 scanlines, char **transformed_data, U32 *transformed_length)
+	{
+		U32 pixels_per_scanline = (stride - stride_padding) / 3;
+		U32 total_pixels = pixels_per_scanline * scanlines;
+
+		U32 new_stride = pixels_per_scanline * 4;
+
+		*transformed_length = total_pixels * 4;
+
+		*transformed_data = new char[*transformed_length];
+		for(int y = 0; y < scanlines; y++)
+		{
+			for(int x = 0; x < pixels_per_scanline; x++)
+			{
+				int source_x = x*3;
+				int source_y = stride*y;
+				int dest_x = x*4;
+				int dest_y = new_stride*y;
+
+				char a = 0xFF;
+				char b = data[(source_y) + (source_x)];
+				char g = data[(source_y) + (source_x) + 1];
+				char r = data[(source_y) + (source_x) + 2];
+				(*transformed_data)[(dest_y) + (dest_x) + 0] = b; // Fully opaque
+				(*transformed_data)[(dest_y) + (dest_x) + 1] = g;
+                (*transformed_data)[(dest_y) + (dest_x) + 2] = r;
+				(*transformed_data)[(dest_y) + (dest_x) + 3] = a;
+			}
+		}
+	}
+
 	int BmpExporter::parse_dib_bitmapinfoheader(std::ifstream &input, BITMAP_INFOHEADER &header)
 	{
 		input.read(reinterpret_cast<char*>(&header), sizeof(header));
@@ -152,7 +205,7 @@ extern "C"
 
 	void BmpExporter::destroy(IContent *data)
 	{
-		
+
 	}
 
 	class BmpExporterFactory : public ContentExporterFactory
