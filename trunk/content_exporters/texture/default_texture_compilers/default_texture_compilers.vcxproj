@@ -39,7 +39,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Samples\C++\Direct3D11\DDSWithoutD3DX11;C:\Projects\maelstrom-engine\maelstrom-editor\content_exporters\tinyxml_2_6_2\tinyxml;C:\Projects\maelstrom-engine\maelstrom-editor\content_exporters\texture\default_texture_compilers\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Samples\C++\Direct3D11\DDSWithoutD3DX11;D:\Projects\Maelstrom\content_exporters\texture\default_texture_compilers\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Projects\maelstrom-engine\maelstrom-editor\content_exporters\tinyxml_2_6_2\tinyxml\DebugtinyxmlSTL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -58,7 +58,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>tinyxmlSTL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
