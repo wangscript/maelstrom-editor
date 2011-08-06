@@ -21,11 +21,16 @@ PluginManager::PluginManager()
 void PluginManager::register_plugins(void)
 {
     QDir plugin_dir = QDir::current();
+	std::cout << plugin_dir.absolutePath().toLocal8Bit().data() << std::endl;
     bool result = plugin_dir.cd("plugins");
-    QString data = plugin_dir.path();
-    if(!plugin_dir.exists())
+    if(!result)
     {
         QDir::current().mkdir("plugins");
+		result = plugin_dir.cd("plugins");
+		if(!result)
+		{
+			throw new DirectoryAccessException(plugin_dir.absoluteFilePath("plugins"));
+		}
     }
 
     const QFileInfoList dir_entries = plugin_dir.entryInfoList();
