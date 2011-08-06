@@ -21,7 +21,6 @@ struct cmp_stdstr
 {
 	bool operator()(std::string *a, std::string *b)
 	{
-		std::cout << "comparing " << *a << " with " << *b << " results in " << (a->compare(*b)) << std::endl;
 		return (a->compare(*b) == 0);
 	}
 };
@@ -165,11 +164,9 @@ public:
 		std::stringstream stream(config_string);
 		while(std::getline(stream, key, ';'))
 		{
-			std::cout << "Found configkey '" << key << "'" << std::endl;
 			std::string value;
 			if(std::getline(stream, value, ';'))
 			{
-				std::cout << "Found configvalue '" << value << "'" << std::endl;
 				std::string *pKey = new std::string(key);
 				std::string *pValue = new std::string(value);
 				unsigned long key_hash = ContentUtil::calc_str_hash(pKey->c_str());
@@ -182,11 +179,9 @@ public:
 	{
 		unsigned long key_hash = ContentUtil::calc_str_hash(key.c_str());
 		std::string *value = NULL;
-		std::cout << "get_config: " << key << std::endl;
 		std::map<unsigned long, std::string*>::iterator it = this->conf_map.find(key_hash);
 		if(it != this->conf_map.end())
 		{
-			std::cout << "Found " << key << ": " << (*it).first << "/" << (*it).second << std::endl;
 			value = (*it).second;
 		}
 		return value;

@@ -19,7 +19,6 @@ private:
     QMap<QString*, ContentCompiler*> texture_compilers;
     PluginManager *plugin_manager;
     std::list<BuildContext*> ctxs;
-    void scan_plugins(void);
 public:
     Pipeline(QString&);
     void build_actor(QString&);

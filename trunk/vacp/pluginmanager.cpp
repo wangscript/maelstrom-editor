@@ -21,7 +21,6 @@ PluginManager::PluginManager()
 void PluginManager::register_plugins(void)
 {
     QDir plugin_dir = QDir::current();
-	std::cout << plugin_dir.absolutePath().toLocal8Bit().data() << std::endl;
     bool result = plugin_dir.cd("plugins");
     if(!result)
     {
@@ -100,6 +99,7 @@ void PluginManager::register_plugins(void)
             }
         }
     }
+	std::cout << "Registered " << this->exporters.count() << " exporters and " << this->compilers.count() << " compilers." << std::endl;
 }
 
 /*

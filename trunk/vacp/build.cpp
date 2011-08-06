@@ -5,6 +5,7 @@
 #include "pipeline.h"
 #include <iostream>
 #include <QTextCodec>
+#include "output_color.h"
 
 BuildContext::BuildContext(Pipeline &pipeline, QString &asset_name, build_callback callback)
     :       pipeline(pipeline),
@@ -31,10 +32,52 @@ void BuildContext::init_dep_tree(int depth, Asset *root_asset)
 
 void BuildContext::exec(void)
 {
-    Asset *asset = Asset::get_by_name(this->asset);
+	Asset *asset;
+	std::cout << "Resolving asset data... ";
+	try
+	{
+		asset = Asset::get_by_name(this->asset);
+		set_color(CLR_GREEN);
+		std::cout << "OK" << std::endl;
+		set_color(CLR_WHITE);
+	}
+	catch(std::exception &ex)
+	{
+		set_color(CLR_RED);
+		std::cout << "FAIL" << std::endl;
+		set_color(CLR_WHITE);
+		std::cout << ex.what() << std::endl;
+	}
+    
     this->tree_depth = 0;
-    this->init_dep_tree(0, asset);
-    this->build_tree();
+
+	std::cout << "Resolving dependency tree... ";
+	try
+	{
+		this->init_dep_tree(0, asset);
+		set_color(CLR_GREEN);
+		std::cout << "OK" << std::endl;
+		set_color(CLR_WHITE);
+	}
+	catch(std::exception &ex)
+	{
+		set_color(CLR_RED);
+		std::cout << "FAIL" << std::endl;
+		set_color(CLR_WHITE);
+		std::cout << ex.what() << std::endl;
+	}
+    
+	std::cout << "Building dependency tree... ";
+	try
+	{
+		this->build_tree();
+		std::cout << std::endl << "> Build succeeded." << std::endl;
+	}
+	catch(std::exception &ex)
+	{
+		std::cout << std::endl << "> Build failed." << std::endl;
+		std::cout << ex.what() << std::endl;
+	}
 }
 
 void BuildContext::build_tree(void)
@@ -52,7 +95,6 @@ void BuildContext::build_tree(void)
 
 void BuildContext::build_asset(Asset *asset)
 {
-    // Build asset if no output file exists
     bool should_build = asset->get_force_build();
 
     if(!should_build)
@@ -67,17 +109,30 @@ void BuildContext::build_asset(Asset *asset)
 
     if(should_build)
     {
+		std::cout << std::endl << "> Building asset " << asset->get_name().toLocal8Bit().constData() << std::endl;
         ContentExporter *exporter = this->pipeline.get_texture_exporter(asset->get_exporter());
         QTextCodec *codec = QTextCodec::codecForLocale();
         QByteArray asset_source =  codec->fromUnicode(asset->get_source());
         char *source = asset_source.data();
 
+		std::cout << "\tExporting using " << asset->get_exporter().toLocal8Bit().constData() << "... ";
         IContent *texture_data = exporter->process(source);
         if(texture_data == NULL)
         {
-            std::cout << exporter->get_last_error_msg() << std::endl;
+			set_color(CLR_RED);
+            std::cout << "FAIL" << std::endl;
+			set_color(CLR_WHITE);
+			QString message(exporter->get_last_error_msg().c_str());
+			throw new ExportFailureException(message);
+			std::cerr << "\t" << exporter->get_last_error_msg() << std::endl << std::endl;
         }
-
+		else
+		{
+			set_color(CLR_GREEN);
+			std::cout << "OK" << std::endl;
+			set_color(CLR_WHITE);
+		}
+		
 
         char *pixels = texture_data->get_pchar_value("PIXELDATA");
 
@@ -86,6 +141,8 @@ void BuildContext::build_asset(Asset *asset)
         QByteArray asset_config = codec->fromUnicode(asset->get_compileconfig());
         char *output = asset_output.data();
         char * config = asset_config.data();
+
+		std::cout << "\tCompiling using " << asset->get_compiler().toLocal8Bit().constData() << "... ";
         int result = compiler->process(
                     texture_data,
                     output,
@@ -93,8 +150,17 @@ void BuildContext::build_asset(Asset *asset)
 
         if(result != 0)
         {
-            std::cout << compiler->get_last_error_msg() << std::endl;
+			set_color(CLR_RED);
+			std::cout << "FAIL" << std::endl;
+			set_color(CLR_WHITE);
+			std::cout << "\t" << compiler->get_last_error_msg() << std::endl << std::endl;
         }
+		else
+		{
+			set_color(CLR_GREEN);
+			std::cout << "OK" << std::endl;
+			set_color(CLR_WHITE);
+		}
 
         exporter->destroy(texture_data);
     }

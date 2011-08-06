@@ -1,3 +1,4 @@
+#include "output_color.h"
 #include <QtCore/QCoreApplication>
 #include <iostream>
 #include <pipeline.h>
@@ -22,6 +23,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
+	set_color(CLR_WHITE);
+
     if(argc != 4)
     {
         printUsage();
@@ -32,6 +35,8 @@ int main(int argc, char *argv[])
         QString cmd(argv[2]);
         QString db(argv[1]);
         QString asset(argv[3]);
+
+		std::cout << "Vortex Asset Conditioning Pipeline" << std::endl << std::endl;
 
         Pipeline *pipeline;
         try
@@ -48,6 +53,7 @@ int main(int argc, char *argv[])
         {
             try
             {
+				std::cout << "Build Actor: " << asset.toLocal8Bit().constData() << std::endl;
                 pipeline->build_actor(asset);
             }
             catch(std::exception &ex)

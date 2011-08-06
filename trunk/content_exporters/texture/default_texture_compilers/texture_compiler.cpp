@@ -43,19 +43,16 @@ extern "C"
 		}
 		header.dwHeight	= *height;
 		header.dwWidth = *width;
-		std::cout << "PreCHECK mipmap" << std::endl;
 		std::string mipmap = CONFIG_MIPMAP;
 		std::string *mipmap_value = ContentCompiler::get_config(mipmap);
 		if(!mipmap_value)
 		{
-			std::cout << "CHECK mipmap" << std::endl;
 			std::string msg("No mipmap configuration was supplied.");
 			ContentPlugin::set_last_error_msg(msg);
 			return -1;
 		}
 		else
 		{
-			std::cout << "Fleh mipmap" << std::endl;
 			try
 			{
 				header.dwMipMapCount = ContentCompiler::str_to_int(*mipmap_value);
@@ -63,7 +60,6 @@ extern "C"
 			}
 			catch(std::exception &ex)
 			{
-				std::cout << "mipmap fail" << std::endl;
 				std::string msg("Invalid mipmap value.");
 				ContentPlugin::set_last_error_msg(msg);
 				return -1;
@@ -72,22 +68,18 @@ extern "C"
 
 		//DDS_PIXELFORMAT pf;
 		//memset(&pf, 0, sizeof(DDS_PIXELFORMAT));
-		std::cout << "Checking compression" << std::endl;
 		std::string compression = CONFIG_COMPRESSION;
 		std::string *compression_value = ContentCompiler::get_config(compression);
 		if(!compression_value)
 		{
-			std::cout << "compression fail" << std::endl;
 			std::string msg("No compression configuration was supplied.");
 			ContentPlugin::set_last_error_msg(msg);
 			return -1;
 		}
 		else
 		{
-			std::cout << "compression nonfail " << *compression_value << std::endl;
 			if(compression_value->compare("None") == 0)
 			{
-				std::cout << "No compression." << std::endl;
 				header.ddspf = DDSPF_A8R8G8B8;
 			}
 			else if(compression_value->compare("DXT1") == 0)
@@ -121,7 +113,6 @@ extern "C"
 				return -1;
 			}
 		}
-		//header.ddspf = pf;
 
 		return 0;
 	}
@@ -150,8 +141,6 @@ extern "C"
 		output << header.dwCubemapFlags; // dwCaps2 on MSDN documentation;
 		for(int i = 0; i < 3; i++)
 			output << header.dwReserved2[i];*/
-		std::cout << header.dwSize << "|" << header.dwHeaderFlags << "|" << header.dwHeight << "|" << header.dwWidth << "|" << header.dwPitchOrLinearSize << "|"<< header.dwDepth << "|" << header.dwMipMapCount << std::endl;
-		std::cout << "ddspf" << "|" << header.ddspf.dwSize << "|" << header.ddspf.dwFlags << "|" << header.ddspf.dwFourCC << "|" << header.ddspf.dwRGBBitCount << "|" << header.ddspf.dwRBitMask << std::endl;
 		I32 magic = DDS_MAGIC;
 		int beforep = output.tellp();
 		output.write(reinterpret_cast<char*>(&magic), 4);
@@ -207,11 +196,6 @@ extern "C"
 
 		output.write(data, *data_len);
 
-		char *header_d = reinterpret_cast<char*>(&header);
-		std::cout << "LOLe" << std::endl;
-		for(int i = 0; i < 124; i++)
-			std::cout << header_d[i];
-		std::cout << std::endl << "eLOL" << std::endl;
 		output.close();
 
 		return 0;

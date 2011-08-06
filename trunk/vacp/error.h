@@ -82,4 +82,20 @@ public:
     }
 };
 
+class ExportFailureException : public std::exception
+{
+private:
+	QString &msg;
+public:
+	ExportFailureException(QString &message)
+		: msg(message)
+	{
+	}
+
+	virtual const char *what() const throw()
+	{
+		return msg.toLocal8Bit().constData();
+	}
+};
+
 #endif // ERROR_H
