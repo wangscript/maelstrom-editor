@@ -2,7 +2,8 @@
 #include <error.h>
 #include <pluginmanager.h>
 #include <QSqlDatabase>
-#include <QSqlError>
+#include <QSqlError>3
+#include "output_color.h"
 
 void context_callback(Pipeline &pl, BuildContext *ctx)
 {
@@ -11,18 +12,28 @@ void context_callback(Pipeline &pl, BuildContext *ctx)
 
 Pipeline::Pipeline(QString &db_path)
 {
+	std::cout << "Connecting to database...";
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(db_path);
     if(!db.open())
     {
+		set_color(CLR_RED);
+		std::cout << "FAIL" << std::endl;
+		set_color(CLR_WHITE);
         QSqlError error = db.lastError();
         QString message(error.text());
         throw new DBException(message);
     }
+	else
+	{
+		set_color(CLR_GREEN);
+		std::cout << "OK" << std::endl;
+		set_color(CLR_WHITE);
+	}
 
+	std::cout << "Registering plugins..." << std::endl;
     this->plugin_manager = new PluginManager;
     this->plugin_manager->register_plugins();
-    this->scan_plugins();
 }
 
 void Pipeline::build_actor(QString& asset)
@@ -31,11 +42,6 @@ void Pipeline::build_actor(QString& asset)
     this->ctxs.push_back(ctx);
 
     ctx->exec();
-}
-
-void Pipeline::scan_plugins(void)
-{
-
 }
 
 void Pipeline::destroy(void)
