@@ -13,6 +13,24 @@ class NoSuchAssetException : public std::exception
     }
 };
 
+class DirectoryAccessException : public std::exception
+{
+private:
+	QString &path;
+public:
+	DirectoryAccessException(QString &path)
+		: path(path)
+	{
+	}
+
+	virtual const char *what() const throw()
+	{
+		QString message("Unable to access folder: ");
+		message.append(path);
+		return message.toLocal8Bit().constData();
+	}
+};
+
 class FileNotFoundException : public std::exception
 {
 private:
@@ -27,7 +45,7 @@ public:
     {
         QString message("File was not found: ");
         message.append(path);
-        return message.toLocal8Bit().data();
+        return message.toLocal8Bit().constData();
     }
 };
 
@@ -43,7 +61,7 @@ public:
 
     virtual const char *what() const throw()
     {
-        return msg.toLocal8Bit().data();
+        return msg.toLocal8Bit().constData();
     }
 };
 
@@ -60,7 +78,7 @@ public:
 
     virtual const char *what() const throw()
     {
-        return msg.toLocal8Bit().data();
+        return msg.toLocal8Bit().constData();
     }
 };
 
