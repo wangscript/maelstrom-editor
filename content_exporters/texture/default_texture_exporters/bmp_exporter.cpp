@@ -93,7 +93,7 @@ extern "C"
 			// When height is non-negavite, its scan lines are flipped vertically so we must flip them.
 			if(dib_header.biHeight > 0)
 			{
-				//this->flip_scanlines(pixel_data, dib_header.biSizeImage, dib_header.biSizeImage / row_size);
+				this->flip_scanlines(pixel_data, dib_header.biSizeImage, stride);
 			}
 
 			// Every texture exporter must export texture data in 32BPP, so we need to transform the bitmap data if it is not 32BPP.
