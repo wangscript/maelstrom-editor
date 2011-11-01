@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary Describes the layout of the Content Package (.PAK) file.
 
 = Introduction =
 
