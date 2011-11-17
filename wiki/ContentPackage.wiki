@@ -27,3 +27,5 @@ The payload follows directly after the header. For each resource in the file, th
 || 5 || Variable-size || The actual resource data ||
 
 To read the data of a specific resource, its offset needs to be found in the index table. Once this offset is found, move the file read pointer to the offset. Here, read the data size, the char (reserved for future use), and finally the actual data.
+
+All information in the PAK files are stored in little-endian.
