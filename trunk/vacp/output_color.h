@@ -5,7 +5,7 @@ enum E_COLOR
 {
 	CLR_WHITE = 15,
 	CLR_RED = 12,
-	CLR_GREEN = 2,
+        CLR_GREEN = 2
 };
 
 void set_color(E_COLOR color);

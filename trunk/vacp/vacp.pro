@@ -10,6 +10,10 @@ QT       -= gui
 
 QT       += sql
 
+QT       += xml
+
+QT       += xmlpatterns
+
 TARGET = vacp
 CONFIG   += console
 CONFIG   -= app_bundle
@@ -20,19 +24,24 @@ TEMPLATE = app
 SOURCES += main.cpp \
     pipeline.cpp \
     build.cpp \
-    asset.cpp \
     contentexporter.cpp \
     texturedata.cpp \
     textureexporter.cpp \
-    pluginmanager.cpp
+    pluginmanager.cpp \
+    output_color.cpp \
+    package.cpp \
+    packagetable.cpp \
+    content.cpp
 
 HEADERS += \
     pipeline.h \
     build.h \
     error.h \
-    asset.h \
-    contentexporter.h \
     texturedata.h \
-    textureexporter.h \
     pluginmanager.h \
-    plugin_header/vacp_plugin_common.h
+    plugin_header/vacp_plugin_common.h \
+    package.h \
+    packageelement.h \
+    packagetable.h \
+    content.h \
+    utilities.h

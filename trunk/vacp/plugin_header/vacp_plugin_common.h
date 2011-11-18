@@ -45,6 +45,7 @@ class IContent
 public:
 	virtual bool exists(char *) = 0;
 	virtual int *get_int_value(char *) = 0;
+	virtual unsigned int *get_uint_value(char *) = 0;
 	virtual char *get_pchar_value(char *) = 0;
 	virtual bool *get_bool_value(char *) = 0;
 };
@@ -56,7 +57,7 @@ private:
 	std::map<unsigned long, char*> *attributes;
 public:
 
-	Content()
+        Content()
 	{
 		this->attributes = new std::map<unsigned long, char*>;
 	}
@@ -79,6 +80,17 @@ public:
 		return return_value;
 	}
 
+	unsigned int *get_uint_value(char *key)
+	{
+		unsigned int *return_value = NULL;
+		int hash = ContentUtil::calc_str_hash(key);
+		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
+		if(it != this->attributes->end())
+			return_value = reinterpret_cast<unsigned int*>(it->second);
+
+		return return_value;
+	}
+
 	char *get_pchar_value(char *key)
 	{
 		char *return_value = NULL;
@@ -86,7 +98,6 @@ public:
 		std::map<unsigned long, char*>::iterator it = this->attributes->find(hash);
 		if(it != this->attributes->end())
 			return_value = it->second;
-		int ss = this->attributes->size();
 		return return_value;
 	}
 
@@ -113,6 +124,11 @@ public:
 	}
 
 	int set_int_value(char *key, int *value)
+	{
+		return set_pchar_value(key, reinterpret_cast<char*>(value));
+	}
+
+	int set_uint_value(char *key, unsigned int *value)
 	{
 		return set_pchar_value(key, reinterpret_cast<char*>(value));
 	}
@@ -192,7 +208,7 @@ class ContentPlugin
 {
 private:
 	ConfigMap *config;
-	std::string last_error_msg;
+        std::string last_error_msg;
 protected:
 	ContentPlugin()
 	{
@@ -226,12 +242,12 @@ protected:
 		return value;
 	}
 
-	void set_last_error_msg(std::string &msg)
+        void set_last_error_msg(std::string &msg)
 	{
 		this->last_error_msg = msg;
 	}
 public:
-	std::string get_last_error_msg()
+        std::string get_last_error_msg()
 	{
 		return this->last_error_msg;
 	}

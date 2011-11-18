@@ -3,48 +3,87 @@
 
 #include <QString>
 #include <exception>
-#include <string>
 
-class NoSuchAssetException : public std::exception
+class NoSuchContentException : public std::exception
 {
+private:
+    QString name;
+public:
+    NoSuchContentException(QString content_name)
+        : name(content_name)
+    {
+    }
+
     virtual const char *what() const throw()
     {
-        return "No such asset was found.";
+        QString message("Content with name '" + name + "' does not exist.");
+        return message.toLocal8Bit().constData();
+    }
+};
+
+class NoSuchPackageException : public std::exception
+{
+private:
+    QString name;
+public:
+    NoSuchPackageException(QString package_name)
+        : name(package_name)
+    {
+    }
+
+    virtual const char *what() const throw()
+    {
+        QString message("Package with name '" + name + "' does not exist.");
+        return message.toLocal8Bit().constData();
     }
 };
 
 class DirectoryAccessException : public std::exception
 {
 private:
-	QString &path;
+        QString path;
 public:
-	DirectoryAccessException(QString &path)
+        DirectoryAccessException(QString path)
 		: path(path)
 	{
 	}
 
 	virtual const char *what() const throw()
 	{
-		QString message("Unable to access folder: ");
-		message.append(path);
-		return message.toLocal8Bit().constData();
+            QString message("Unable to access folder '" + path + "'");
+            return message.toLocal8Bit().constData();
 	}
+};
+
+class IOException : public std::exception
+{
+private:
+    QString message;
+public:
+    IOException(QString message)
+        : message(message)
+    {
+    }
+
+    virtual const char *what() const throw()
+    {
+        return message.toLocal8Bit().constData();
+    }
 };
 
 class FileNotFoundException : public std::exception
 {
 private:
-    QString &path;
+    QString path;
 public:
-    FileNotFoundException(QString &path)
+    FileNotFoundException(QString path)
         : path(path)
     {
     }
 
     virtual const char *what() const throw()
     {
-        QString message("File was not found: ");
-        message.append(path);
+        QString message("File was not found '" + path + "'");
         return message.toLocal8Bit().constData();
     }
 };
@@ -52,50 +91,69 @@ public:
 class DBException : public std::exception
 {
 private:
-    QString &msg;
+    QString message;
 public:
-    DBException(QString &message)
-        : msg(message)
+    DBException(QString failure_message)
+        : message(failure_message)
     {
     }
 
     virtual const char *what() const throw()
     {
-        return msg.toLocal8Bit().constData();
+        return message.toLocal8Bit().constData();
     }
 };
 
 
-class InvalidAssetException : public std::exception
+class InvalidContentException : public std::exception
 {
 private:
-    QString &msg;
+    QString name;
+    QString message;
 public:
-    InvalidAssetException(QString &message)
-        : msg(message)
+    InvalidContentException(QString content_name, QString validation_message)
+        : name(content_name),
+          message(validation_message)
     {
     }
 
     virtual const char *what() const throw()
     {
-        return msg.toLocal8Bit().constData();
+        QString message("Asset '" + name + "' is invalid. Message: " + message);
+        return message.toLocal8Bit().constData();
     }
 };
 
 class ExportFailureException : public std::exception
 {
 private:
-	QString &msg;
+        QString message;
 public:
-	ExportFailureException(QString &message)
-		: msg(message)
-	{
-	}
+        ExportFailureException(QString failure_message)
+                : message(failure_message)
+        {
+        }
 
-	virtual const char *what() const throw()
-	{
-		return msg.toLocal8Bit().constData();
-	}
+        virtual const char *what() const throw()
+        {
+                return message.toLocal8Bit().constData();
+        }
+};
+
+class CompileFailureException : public std::exception
+{
+private:
+        QString message;
+public:
+        CompileFailureException(QString failure_message)
+                : message(failure_message)
+        {
+        }
+
+        virtual const char *what() const throw()
+        {
+                return message.toLocal8Bit().constData();
+        }
 };
 
 #endif // ERROR_H

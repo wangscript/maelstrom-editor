@@ -28,7 +28,8 @@ void PluginManager::register_plugins(void)
 		result = plugin_dir.cd("plugins");
 		if(!result)
 		{
-			throw new DirectoryAccessException(plugin_dir.absoluteFilePath("plugins"));
+                    QString path = plugin_dir.absoluteFilePath("plugins");
+                    throw new DirectoryAccessException(path);
 		}
     }
 
@@ -138,9 +139,7 @@ ContentExporter *PluginManager::create_texture_exporter(QString &exporter_name)
     QMap<QString, ContentExporterFactory*>::iterator it = this->exporters.find(exporter_name);
     if(it == this->exporters.end())
     {
-        QString msg("An asset refers to an exporter that does not exist: ");
-        msg.append(exporter_name);
-        throw new InvalidAssetException(msg);
+        throw new ExportFailureException(QString("An attempt was made to create an exporter that does not exist:") + exporter_name);
     }
     else
     {
@@ -157,10 +156,7 @@ ContentCompiler *PluginManager::create_texture_compiler(QString &compiler_name)
     QMap<QString, ContentCompilerFactory* >::iterator it = this->compilers.find(compiler_name);
     if(it == this->compilers.end())
     {
-        QString msg("An asset refers to a compiler that does not exist: ");
-        msg.append(compiler_name);
-        // TODO: Should not throw this kind of exception.
-        throw new InvalidAssetException(msg);
+        throw new CompileFailureException(QString("An attempt was made to create a compiler that does not exist:") + compiler_name);
     }
     else
     {
