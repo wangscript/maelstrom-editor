@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <cmath>
 #define DX10_PIXELFORMAT	808540228UL
 #define CONFIG_MIPMAP		std::string("Mipmap")
 #define CONFIG_COMPRESSION	std::string("Compression")
@@ -298,6 +299,75 @@ extern "C"
 		return mm_chain;
 	}
 
+		mipmap_chain *TextureDDSCompiler::generate_mipmap_chain_v2(char *data, U32 data_length, U32 height, U32 width, U32 chain_length)
+	{
+		mipmap_chain *mm_chain = new mipmap_chain;
+		mm_chain->length = chain_length;
+		mm_chain->chain = new texture2d[chain_length];
+
+		mm_chain->chain[0].data = new char[data_length];
+		mm_chain->chain[0].length = data_length;
+		memcpy(mm_chain->chain[0].data, data, data_length);
+
+		U32 mipmap_width = width;
+		U32 mipmap_height = height;
+
+		U32 cur_width;
+		U32 pre_width = width;
+
+		U32 *cur_level;
+		U32 *pre_level;
+
+		U32 box[4];
+		float weights[12];
+
+		chain_length = std::floor(this->log2(width));
+
+		for(int l = 1; l <= chain_length; l++)
+		{
+			
+			mipmap_width = (U32)std::floor(mipmap_width / 2.0f);
+			mipmap_height = (U32)std::floor(mipmap_height / 2.0f);
+
+			cur_width = mipmap_width;
+			mm_chain->chain[l].length = mipmap_width * mipmap_height * 4;
+			mm_chain->chain[l].data = new char[mm_chain->chain[l].length];
+			cur_level = reinterpret_cast<U32*>(mm_chain->chain[l].data);
+			pre_level = reinterpret_cast<U32*>(mm_chain->chain[l-1].data);
+
+			for(int y = 0; y < std::max((U32)1, mipmap_height); y++)
+			{
+				float y0 = y << 1;
+				float y1 = std::min(y0 + 1, (float)std::max((U32)1, height >> (l-1)) - 1);
+				for(int x = 0; x < std::max((U32)1, mipmap_width); x++)
+				{
+					float x0 = x<<1;
+					float x1 = std::min(x0 + 1, (float)std::max((U32)1, width>>(l-1)) - 1);
+					
+					box[0] = pre_level[(U32)((2 * y) * pre_width) + (2 * x)];
+					box[1] = pre_level[(U32)((2 * y + 1) * pre_width) + (2 * x + 1)];
+					box[2] = pre_level[(U32)(y1 * pre_width) + (U32)x0];
+					box[3] = pre_level[(U32)(y1 * pre_width) + (U32)x1];
+
+					weights[0] = (float)(cur_width - x)	/ (2 * cur_width + 1);
+					weights[1] = (float)(cur_width)		/ (2 * cur_width + 1);
+					weights[2] = (float)(x + 1)			/ (2 * cur_width + 1);
+					weights[3] = 
+
+					cur_level[(y * cur_width) + x] =	((U32)(((box[0] >> 24) + (box[1] >> 24) + (box[2] >> 24) + (box[3] >> 24)) * 0.25) << 24) |
+														((U32)(((box[0] >> 16 & 0xFF) + (box[1] >> 16 & 0xFF) + (box[2] >> 16 & 0xFF) + (box[3] >> 16 & 0xFF)) * 0.25) << 16) |
+														((U32)(((box[0] >> 8 & 0xFF) + (box[1] >> 8 & 0xFF) + (box[2] >> 8 & 0xFF) + (box[3] >> 8 & 0xFF)) * 0.25) << 8) |
+														(U32)(((box[0] & 0xFF) + (box[1] & 0xFF) + (box[2] & 0xFF) + (box[3] & 0xFF)) * 0.25);
+				}
+			}
+
+			pre_width = cur_width;
+		}
+
+
+		return mm_chain;
+	}
+
 	void TextureDDSCompiler::destroy_mipmap_chain(mipmap_chain *mm_chain)	
 	{
 		for(U32 i = 0; i < mm_chain->length; i++)
@@ -309,6 +379,12 @@ extern "C"
 		//delete[] mm_chain->chain;
 
 		delete mm_chain;
+	}
+
+	double TextureDDSCompiler::log2( double n )  
+	{  
+		// log(n)/log(2) is log2.  
+		return log( n ) / log( 2.0 );  
 	}
 
 	class TextureDDSCompilerFactory : public ContentCompilerFactory
