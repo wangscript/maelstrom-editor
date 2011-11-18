@@ -41,6 +41,9 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionNew_project"/>
+    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -52,6 +55,7 @@
     <property name="title">
      <string>Tools</string>
     </property>
+    <addaction name="actionResource_editor"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -92,6 +96,21 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionResource_editor">
+   <property name="text">
+    <string>Resource editor</string>
+   </property>
+  </action>
+  <action name="actionNew_project">
+   <property name="text">
+    <string>New Project...</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open Project...</string>
    </property>
   </action>
  </widget>

@@ -1,10 +1,13 @@
 #include <QtGui/QApplication>
 #include <splashscreen.h>
-#include "mainwindow.h"
+#include <mainwindow.h>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    QCoreApplication::setOrganizationName("Vortex");
+    QCoreApplication::setApplicationName("Maelstrom");
+
     SplashScreen splash;
     MainWindow mainWindow;
 

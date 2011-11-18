@@ -6,12 +6,17 @@
 #include <QSplitter>
 #include <QTimer>
 
-#include <vortex/vtx_vortex.h>
-#include <vortex/vtx_window.h>
+#include <core/vtx_vortex.h>
+#include <core/vtx_windowcreationparams.h>
+#include <graphics/vtx_rendercreationparams.h>
+
 
 namespace Ui {
     class MainWindow;
 }
+
+class MaelstromProject;
+class ResourceEditor;
 
 class QSplitterEx : public QSplitter
 {
@@ -38,15 +43,22 @@ public:
 
 public slots:
     void viewportRedraw(void);
+    void openResourceEditor(void);
+    void projectInfoChanged(void);
+    void newProjectClicked(void);
+    void openProjectClicked(void);
 signals:
     void initializeProgressChanged(QString);
 
 private:
+    bool saveProject();
     Ui::MainWindow *ui;
     QSplitterEx *bottomSplitter;
     QSplitter *topSplitter, *verticalSplitter;
     Viewport *viewport[4];
-    Root *root;
+    core::Root *root;
+    MaelstromProject *project;
+    ResourceEditor *resourceEditor;
 };
 
 #endif // MAINWINDOW_H

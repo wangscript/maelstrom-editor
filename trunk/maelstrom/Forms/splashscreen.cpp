@@ -2,7 +2,7 @@
 #include "ui_splashscreen.h"
 #include <QPixmap>
 #include <QStringBuilder>
-#include <platform/vtx_defineconfig.h>
+#include <core/vtx_buildconfig.h>
 
 
 SplashScreen::SplashScreen(QWidget *parent) :
