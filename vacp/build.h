@@ -1,30 +1,35 @@
 #ifndef BUILD_H
 #define BUILD_H
 
-#include <QString>
-#include <string>
-#include <map>
 #include <QMultiMap>
 
+
+class ContentInfo;
 class Pipeline;
-class Asset;
+class QDir;
+class QString;
 
 class BuildContext
 {
 public:
         typedef void (*build_callback)(Pipeline &pl, BuildContext*);
-        BuildContext(Pipeline &pipeline, QString &asset_name, build_callback callback);
-        void exec(void);
+    BuildContext(Pipeline &pipeline, ContentInfo &content, QString &build_dir, build_callback callback);
+        void exec();
+        ContentInfo& get_input_asset() const;
 private:
-        Pipeline &pipeline;
+        Pipeline &parent_pipeline;
+        ContentInfo &context_content;
+        QString &build_dir;
         build_callback cbk;
-        QString asset;
         int tree_depth;
-        QMultiMap<unsigned int, Asset*> dep_map;
 
-        void init_dep_tree(int, Asset*);
-        void build_tree(void);
-        void build_asset(Asset*);
+        QMultiMap<unsigned int, ContentInfo*> dep_map;
+
+        void build_content(ContentInfo*);
+        void build_tree();
+        void create_meta(ContentInfo&);
+        void init_dep_tree(int, ContentInfo&);
+        QDir *get_output_path(ContentInfo&) const;
 };
 
 #endif // BUILD_H

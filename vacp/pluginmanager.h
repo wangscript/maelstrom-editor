@@ -15,7 +15,7 @@ private:
     QMap<QString, ContentExporterFactory*> exporters;
     QMap<QString, ContentCompilerFactory*> compilers;
 public:
-    void register_plugins(void);
+    void register_plugins();
 
     void register_exporter(char *exporter_name, void *token);
     void register_compiler(char *compiler_name, void *token);

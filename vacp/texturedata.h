@@ -5,7 +5,7 @@
 class ITexture
 {
 public:
-    virtual qint32 *get_data(void) = 0;
+    virtual qint32 *get_data() = 0;
 };
 
 class TextureData
@@ -22,17 +22,17 @@ public:
     {
     }
 
-    qint32 *get_data(void)
+    qint32 *get_data()
     {
         return this->data;
     }
 
-    qint32 get_stride(void)
+    qint32 get_stride()
     {
         return this->stride;
     }
 
-    qint32 get_size(void)
+    qint32 get_size()
     {
         return this->size;
     }
