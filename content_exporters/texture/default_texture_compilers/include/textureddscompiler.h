@@ -24,7 +24,9 @@ class TextureDDSCompiler : public ContentCompiler
 		bool is_power_of_two(U32 value);
 		U32 get_set_bit(U32 value);
 		mipmap_chain *generate_mipmap_chain(char *data, U32 data_length, U32 height, U32 width, U32 chain_length);
+		mipmap_chain *generate_mipmap_chain_v2(char *data, U32 data_length, U32 height, U32 width, U32 chain_length);
 		void destroy_mipmap_chain(mipmap_chain *mm_chain);
+		double log2(double n);
 	public:
 		virtual int process(IContent *input, const char *path, char *config);
 	};

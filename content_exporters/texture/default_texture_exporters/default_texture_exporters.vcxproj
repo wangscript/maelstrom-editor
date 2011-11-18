@@ -39,7 +39,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Projects\Maelstrom\vacp\plugin_header;D:\Projects\Maelstrom\content_exporters\texture\default_texture_exporters\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\vacp\plugin_header;D:\Projects\Maelstrom\content_exporters\texture\default_texture_exporters\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
