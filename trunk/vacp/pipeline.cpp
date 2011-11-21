@@ -25,9 +25,9 @@ Pipeline::Pipeline(QString &db_path)
     db.setDatabaseName(db_path);
     if(!db.open())
     {
-		set_color(CLR_RED);
-		std::cout << "FAIL" << std::endl;
-		set_color(CLR_WHITE);
+        set_color(CLR_RED);
+        std::cout << "FAIL" << std::endl;
+        set_color(CLR_WHITE);
         QSqlError error = db.lastError();
         QString message(error.text());
         throw new DBException(message);
@@ -126,6 +126,7 @@ void Pipeline::link_package(QString &package_name, QString &build_dir)
 
     QString package_path = dir.filePath(package_name + ".pak");
     QFile package_file(package_path);
+
     if(!package_file.open(QIODevice::WriteOnly | QIODevice::Truncate))
     {
         delete package;
@@ -134,7 +135,7 @@ void Pipeline::link_package(QString &package_name, QString &build_dir)
 
     QList<ContentInfo*> *assets = package->get_contentinfo();
 
-    quint32 table_size = 4 + (assets->count() * 8); // 4 initial bytes + 8 bytes per content.
+    quint32 table_size = sizeof(quint32) + (assets->count() * sizeof(quint32) * 2); // 4 initial bytes + 8 bytes per content.
 
 
     // Resize to fit the package table, and skip past it since we dont have enough information to compose it yet.
@@ -183,11 +184,12 @@ void Pipeline::link_package(QString &package_name, QString &build_dir)
             throw new IOException("Unable to read content meta file '" + meta_path + "'");
         }
 
-        QXmlQuery query;
-        QString querystr = "ContentMeta/Dependencies/Dependency";
-        QUrl url(meta_path);
+        //QXmlQuery query;
+        //QString querystr = "ContentMeta/Dependencies/Dependency";
+        //QUrl url(meta_path);
 
-        query.setQuery(querystr);
+        //query.setQuery(querystr);
+
         //QStringList list;
         //query.evaluateTo(&list);
 
@@ -208,13 +210,10 @@ void Pipeline::link_package(QString &package_name, QString &build_dir)
             // Throw some kind of exception!
         }*/
 
-
-
-
         quint64 content_size = content_file.size();
         elements.push_back(new PackageElement(
                                assets->at(i)->get_id(),
-                               content_size + 4)); // 4 is added to content_size to take into account the leading size integer.
+                               content_size + sizeof(quint32))); // sizeof(quint32) is because QDataStream::writeBytes writes a 32-bit length specifier to the buffer.
 
 
         QDataStream content_stream(&content_file);
@@ -223,8 +222,6 @@ void Pipeline::link_package(QString &package_name, QString &build_dir)
 
         content_stream.readRawData(content_raw_buffer, content_size);
 
-        package_stream << (quint32)content_size;
-        package_stream << (char)0;
         package_stream.writeBytes(content_raw_buffer, content_size);
         delete[] content_raw_buffer;
 
@@ -239,7 +236,7 @@ void Pipeline::link_package(QString &package_name, QString &build_dir)
     package_stream << (quint32)elements.count();
     for(int i = 0; i < elements.count(); i++)
     {
-        package_stream << elements.at(i)->get_hash()
+        package_stream << elements.at(i)->get_hash();
         package_stream << offset;
 
         offset += elements.at(i)->get_size();
